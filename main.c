@@ -10,7 +10,6 @@ void searchPatient();
 void deletePatient();
 void manageDoctSched();
 
-
 // Structure to store patient information
 typedef struct {
     int id;
@@ -21,11 +20,7 @@ typedef struct {
 } Patient;
 
 int patientCount = 0;
-int newID = 1;
-int idExists;
 Patient patients[MAX_PATIENTS];
-
-
 
 int main(void) {
 
@@ -70,7 +65,7 @@ void addPatient()
         return;
     }
     Patient patient;
-    patient.id++;
+    patient.id = generatePatientID();
 
     printf("Enter patient name: ");
     scanf(" %[^\n]", &patient.name);
@@ -90,21 +85,22 @@ void addPatient()
     printf("Patient added successfully ID: %d\n", patient.id);
 }
 
-//int generatePatientID() {
-//    do {
-//        idExists = 0;
-//
-//        for (int i = 0; i < patientCount; i++) {
-//            if (patients[i].id == newID) {
-//               idExists = 1;
-//                newID++;
-//                break;
-//            }
-//        }
-//    } while (idExists);
-//
-//    return newID;
-//}
+int generatePatientID() {
+    int candidate = 1;
+    while (1) {
+        int found = 0;
+        for (int i = 0; i < patientCount; i++) {
+            if (patients[i].id == candidate) {
+                found = 1;
+                break;
+            }
+        }
+        if (!found) {
+            return candidate;
+        }
+        candidate++;
+    }
+}
 
 void displayPatient()
 {

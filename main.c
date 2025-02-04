@@ -1,12 +1,15 @@
 #include <stdio.h>
+#include <string.h>
 
 #define MAX_PATIENTS 50
 
+int generatePatientID();
 void addPatient();
 void displayPatient();
 void searchPatient();
 void deletePatient();
 void manageDoctSched();
+
 
 // Structure to store patient information
 typedef struct {
@@ -18,6 +21,8 @@ typedef struct {
 } Patient;
 
 int patientCount = 0;
+int newID = 1;
+int idExists;
 Patient patients[MAX_PATIENTS];
 
 
@@ -65,8 +70,7 @@ void addPatient()
         return;
     }
     Patient patient;
-
-    patient.id = patientCount +1;
+    patient.id++;
 
     printf("Enter patient name: ");
     scanf(" %[^\n]", &patient.name);
@@ -85,6 +89,22 @@ void addPatient()
 
     printf("Patient added successfully ID: %d\n", patient.id);
 }
+
+//int generatePatientID() {
+//    do {
+//        idExists = 0;
+//
+//        for (int i = 0; i < patientCount; i++) {
+//            if (patients[i].id == newID) {
+//               idExists = 1;
+//                newID++;
+//                break;
+//            }
+//        }
+//    } while (idExists);
+//
+//    return newID;
+//}
 
 void displayPatient()
 {
@@ -107,12 +127,105 @@ void displayPatient()
 
 void searchPatient()
 {
-    printf("Test");
+    int choice;
+    printf("Enter how you would like to search patient: \n");
+    printf("1. by ID\n");
+    printf("2. by name\n");
+    scanf("%d", &choice);
+
+    switch (choice)
+    {
+        case 1: {
+            int inputId;
+            printf("Enter the ID of the patient you are looking for: \n");
+            scanf("%d", &inputId);
+            if (inputId > patientCount || inputId < 0) {
+                printf("Error: Invalid ID!\n", inputId);
+            } else {
+                int found = 0;
+                for (int i = 0; i < patientCount; i++) {
+                    if (inputId == patients[i].id) {
+                        printf("\nPatient Found:\n");
+                        printf("Patient ID: %d\n", patients[i].id);
+                        printf("Patient Name: %s\n", patients[i].name);
+                        printf("Patient Age: %d\n", patients[i].age);
+                        printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
+                        printf("Patient Room No.: %d\n", patients[i].roomNumber);
+                        printf("\n");
+                        found = 1;
+                        break;
+                    }
+                }
+                if (!found) {
+                    printf("Error: Patient Not Found!\n");
+                }
+                break;
+            }
+        }
+        case 2: {
+            char inputName[100];
+            printf("Enter the ID of the patient you are looking for: ");
+            scanf("%s", inputName);
+            if (inputName[0] == '\0') {
+                printf("Error: Empty Name!\n");
+            }
+            int found = 0;
+            for (int i = 0; i < patientCount; i++) {
+                if (strcmp(inputName, patients[i].name) == 0) {
+                    printf("\nPatient Found:\n");
+                    printf("Patient ID: %d\n", patients[i].id);
+                    printf("Patient Name: %s\n", patients[i].name);
+                    printf("Patient Age: %d\n", patients[i].age);
+                    printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
+                    printf("Patient Room No.: %d\n", patients[i].roomNumber);
+                    printf("\n");
+                    found = 1;
+                    break;
+                }
+            }
+            if (!found) {
+                printf("Error: Patient Not Found!\n");
+            }
+            break;
+        }
+        default:
+            printf("Invalid Choice!\n");
+    }
 }
 
 void deletePatient()
 {
-    printf("Test");
+    if (patientCount == 0) {
+        printf("No patients to delete.\n");
+    }
+
+    int id;
+    int index = -1;
+
+    printf("Please enter Patient ID to delete: ");
+    scanf("%d", &id);
+
+    for (int i = 0; i < patientCount; i++) {
+        if (patients[i].id == id) {
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1)
+        {
+        printf("Error: Patient with ID %d not found.\n", id);
+        return;
+    }
+
+    for (int i = index; i < patientCount - 1; i++)
+        {
+        patients[i] = patients[i + 1];
+    }
+
+    patientCount--;
+    printf("Patient with ID %d deleted successfully.\n", id);
+
 }
 
 void manageDoctSched() {

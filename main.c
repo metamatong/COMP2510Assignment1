@@ -22,6 +22,7 @@ typedef enum {
 } Shift;
 
 int generatePatientID();
+void menu();
 void addPatient();
 void displayPatient();
 void searchPatient();
@@ -47,8 +48,13 @@ int patientCount = 0;
 Patient patients[MAX_PATIENTS];
 Doctor doctors[DAY_COUNT][SHIFT_COUNT];
 
-int main(void) {
+int main() {
+    menu();
+    return 0;
 
+}
+
+void menu() {
     int choice;
     while (1) {
         printf("\n=== Hospital Management System ===\n");
@@ -64,25 +70,24 @@ int main(void) {
         {
             case 1:
                 addPatient();
-                break;
+            break;
             case 2:
                 displayPatient();
-                break;
+            break;
             case 3:
                 searchPatient();
-                break;
+            break;
             case 4:
                 deletePatient();
-                break;
+            break;
             case 5:
                 manageDoctSched();
-                break;
+            break;
             case 6:
-                return 0;
+                return;
         }
     }
 }
-
 void addPatient()
 {
     if (patientCount >= MAX_PATIENTS) {
@@ -93,13 +98,13 @@ void addPatient()
     patient.id = generatePatientID();
 
     printf("Enter patient name: ");
-    scanf(" %[^\n]", &patient.name);
+    scanf(" %[^\n]", patient.name);
 
     printf("Enter patient age: ");
     scanf("%d", &patient.age);
 
     printf("Enter patient diagnosis: ");
-    scanf(" %[^\n]", &patient.diagnosis);
+    scanf(" %[^\n]", patient.diagnosis);
 
     printf("Enter patient room number: ");
     scanf("%d", &patient.roomNumber);
@@ -130,6 +135,7 @@ int generatePatientID()
 
 void displayPatient()
 {
+    printf("=== Every Patient currently checked in ===\n");
     if (patientCount == 0) {
         printf("Error: No patients right now!\n");
         return;
@@ -144,7 +150,7 @@ void displayPatient()
         printf("\n");
     }
 
-    printf("Displayed Every Patients Successfully.\n");
+
 }
 
 void searchPatient()
@@ -186,8 +192,8 @@ void searchPatient()
         }
         case 2: {
             char inputName[100];
-            printf("Enter the ID of the patient you are looking for: ");
-            scanf("%s", inputName);
+            printf("Enter the name of the patient you are looking for: ");
+            scanf(" %[^\n]", inputName);
             if (inputName[0] == '\0') {
                 printf("Error: Empty Name!\n");
             }
@@ -305,11 +311,16 @@ void assignDoctorShift() {
       return;
     }
 
-    printf("Please enter name of the doctor name: ");
+    printf("Please enter the Doctor's name: ");
     scanf(" %[^\n]", docName);
 
-    strcpy(doctors[day][shift].docName, docName);
-    printf( "Doctor '%s' assigned to %s (%s) successfully!\n", docName, dayNames[day], shiftNames[shift]);
+    if(strlen(doctors[day][shift].docName) != 0) {
+      printf("Error: A doctor is already assigned for %s (%s).\n", dayNames[day], shiftNames[shift]);
+    } else {
+        strcpy(doctors[day][shift].docName, docName);
+        printf( "Doctor '%s' assigned to %s (%s) successfully!\n", docName, dayNames[day], shiftNames[shift]);
+    }
+
 }
 
 void viewWeeklySchedule() {
@@ -327,10 +338,9 @@ void viewWeeklySchedule() {
       if(strlen(doctors[i][j].docName) == 0) {
         printf("%-9s (%-9s): [No Doctor Assigned]\n", dayNames[i], shiftNames[j]);
       } else {
-        printf("%-9s (%9-s) : Dr. %s\n", dayNames[i], shiftNames[j], doctors[i][j].docName);
+        printf("%-9s (%-9s) : Dr. %s\n", dayNames[i], shiftNames[j], doctors[i][j].docName);
       }
     }
     printf("\n");
   }
-
 }

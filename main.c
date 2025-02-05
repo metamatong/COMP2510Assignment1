@@ -3,12 +3,32 @@
 
 #define MAX_PATIENTS 50
 
+typedef enum {
+  SUNDAY,
+  MONDAY,
+  TUESDAY,
+  WEDNESDAY,
+  THURSDAY,
+  FRIDAY,
+  SATURDAY,
+  DAY_COUNT
+} Day;
+
+typedef enum {
+    MORNING,
+    AFTERNOON,
+    EVENING,
+    SHIFT_COUNT
+} Shift;
+
 int generatePatientID();
 void addPatient();
 void displayPatient();
 void searchPatient();
 void deletePatient();
 void manageDoctSched();
+void assignDoctorShift();
+void viewWeeklySchedule();
 
 // Structure to store patient information
 typedef struct {
@@ -19,14 +39,19 @@ typedef struct {
     int roomNumber;
 } Patient;
 
+typedef struct {
+  char docName[50];
+} Doctor;
+
 int patientCount = 0;
 Patient patients[MAX_PATIENTS];
+Doctor doctors[DAY_COUNT][SHIFT_COUNT];
 
 int main(void) {
 
     int choice;
     while (1) {
-        printf("\nHospital Management System\n");
+        printf("\n=== Hospital Management System ===\n");
         printf("1. Add Patient\n");
         printf("2. Display Patients\n");
         printf("3. Search Patient by ID\n");
@@ -85,7 +110,8 @@ void addPatient()
     printf("Patient added successfully ID: %d\n", patient.id);
 }
 
-int generatePatientID() {
+int generatePatientID()
+{
     int candidate = 1;
     while (1) {
         int found = 0;
@@ -225,5 +251,56 @@ void deletePatient()
 }
 
 void manageDoctSched() {
-    printf("Test");
+
+  int choice;
+  do {
+    printf("\n=== Doctor Schedule Management ===\n");
+    printf("1. Assign Doctor to a Shift\n");
+    printf("2. View Weekly Schedule\n");
+    printf("3. Return to Previous Menu\n");
+    scanf("%d", &choice);
+
+    switch (choice)
+        case 1:
+            assignDoctorShift();
+            break;
+        case 2:
+            viewWeeklySchedule();
+            break;
+        case 3:
+          printf("Returning to main menu...\n");
+          break;
+        default:
+          printf("Invalid Choice! Please try again.\n");
+
+    } while(choice != 3);
+}
+
+void assignDoctorShift() {
+    int day, shift;
+    char docName[50];
+
+    printf("\nEnter day of the week [0=Sunday, 6=Saturday]: ");
+    scanf("%d", &day);
+    if(day < 0 || day >= DAY_COUNT) {
+      printf("Error: Invalid day!\n");
+      return;
+    }
+
+    printf("Enter shift [0=Morning, 1=Afternoon, 2=Evening] ");
+    scanf("%d", &shift);
+    if(shift < 0 || shift >= SHIFT_COUNT) {
+      printf("Error: Invalid shift!\n");
+      return;
+    }
+
+    printf("Please enter name of the doctor name: ");
+    scanf(" %[^\n]", docName);
+
+    strcpy(doctors[day][shift].docName, docName);
+    printf("Doctor '%s' assigned to day=%d, shift=%d successfully!\n", docName, day, shift);
+}
+
+void viewWeeklySchedule() {
+
 }

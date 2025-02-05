@@ -260,7 +260,7 @@ void manageDoctSched() {
     printf("3. Return to Previous Menu\n");
     scanf("%d", &choice);
 
-    switch (choice)
+    switch (choice) {
         case 1:
             assignDoctorShift();
             break;
@@ -273,10 +273,21 @@ void manageDoctSched() {
         default:
           printf("Invalid Choice! Please try again.\n");
 
-    } while(choice != 3);
+    }
+  } while (choice != 3);
 }
 
 void assignDoctorShift() {
+
+    const char* dayNames[DAY_COUNT] = {
+        "Sunday", "Monday", "Tuesday", "Wednesday",
+        "Thursday", "Friday", "Saturday"
+    };
+
+    const char* shiftNames[SHIFT_COUNT] = {
+        "Morning", "Afternoon", "Evening"
+    };
+
     int day, shift;
     char docName[50];
 
@@ -298,9 +309,28 @@ void assignDoctorShift() {
     scanf(" %[^\n]", docName);
 
     strcpy(doctors[day][shift].docName, docName);
-    printf("Doctor '%s' assigned to day=%d, shift=%d successfully!\n", docName, day, shift);
+    printf( "Doctor '%s' assigned to %s (%s) successfully!\n", docName, dayNames[day], shiftNames[shift]);
 }
 
 void viewWeeklySchedule() {
+  const char* dayNames[DAY_COUNT] = {
+    "Sunday","Monday","Tuesday","Wednesday", "Thursday","Friday","Saturday"
+     };
+
+  const char* shiftNames[SHIFT_COUNT] = {
+    "Morning","Afternoon","Evening"
+  };
+
+  printf("\n=== Weekly Doctor Schedule ===\n");
+  for (int i = 0; i < DAY_COUNT; i++) {
+    for(int j = 0; j < SHIFT_COUNT; j++) {
+      if(strlen(doctors[i][j].docName) == 0) {
+        printf("%-9s (%-9s): [No Doctor Assigned]\n", dayNames[i], shiftNames[j]);
+      } else {
+        printf("%-9s (%9-s) : Dr. %s\n", dayNames[i], shiftNames[j], doctors[i][j].docName);
+      }
+    }
+    printf("\n");
+  }
 
 }

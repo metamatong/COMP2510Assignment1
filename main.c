@@ -176,8 +176,13 @@ void searchPatient()
             case 1: {
                 // Keep asking for an ID until found or user cancels
                 while (1) {
-                    int inputId = getValidInt(0, 9999,
-                        "\nEnter the ID of the patient: \n");
+                    int inputId = getValidInt(-1, 9999,
+                        "\nEnter the ID of the patient (or -1 to cancel): \n");
+
+                    // A sentinel value (-1) to quit the loop
+                    if (inputId == -1) {
+                        break; // go back to choice menu
+                    }
 
                     int found = 0;
                     for (int i = 0; i < patientCount; i++) {
@@ -335,22 +340,41 @@ void assignDoctorShift() {
         "Morning", "Afternoon", "Evening"
     };
 
-    int day, shift;
     char docName[50];
 
-    day = getValidInt(0, DAY_COUNT - 1, "\nEnter day of the week [0=Sunday, 6=Saturday]: \n");
+    // We'll loop until the user successfully assigns a doctor
+    // or decides to cancel.
+    while (1) {
+        printf("\n-- Assign Doctor to a Shift --\n");
 
-    shift = getValidInt(0, 2, "\nEnter shift [0=Morning, 1=Afternoon, 2=Evening]: \n");
+        // If you want to allow user to "cancel,"
+        // you can broaden getValidInt's minimum to -1 and check for that:
+        int day = getValidInt(-1, DAY_COUNT - 1,
+            "Enter day of the week [0=Sunday..6=Saturday] or -1 to cancel: ");
+        if (day == -1) {
+            printf("Assignment cancelled.\n");
+            return; // go back to previous menu
+        }
 
-    getValidString(docName, 49, "Please enter the Doctor's name: ");
+        int shift = getValidInt(0, SHIFT_COUNT - 1,
+            "Enter shift [0=Morning, 1=Afternoon, 2=Evening]: ");
 
-    if(strlen(doctors[day][shift].docName) != 0) {
-      printf("Error: A doctor is already assigned for %s (%s).\n", dayNames[day], shiftNames[shift]);
-    } else {
-        strcpy(doctors[day][shift].docName, docName);
-        printf( "Doctor '%s' assigned to %s (%s) successfully!\n", docName, dayNames[day], shiftNames[shift]);
+        getValidString(docName, 49, "Please enter the Doctor's name: ");
+
+        // Check if there's already a doctor assigned
+        if (strlen(doctors[day][shift].docName) != 0) {
+            printf("Error: A doctor is already assigned for %s (%s).\n",
+                dayNames[day], shiftNames[shift]);
+            printf("Please try again.\n\n");
+            // Loop continues, re-prompting for day/shift
+        } else {
+            // Assign the new doctor to that day/shift
+            strcpy(doctors[day][shift].docName, docName);
+            printf("Doctor '%s' assigned to %s (%s) successfully!\n",
+                docName, dayNames[day], shiftNames[shift]);
+            break; // we are done, so break out of the while loop
+        }
     }
-
 }
 
 void viewWeeklySchedule() {

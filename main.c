@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 #define MAX_PATIENTS 50
 
 typedef enum {
@@ -44,6 +43,7 @@ typedef struct {
     int roomNumber;
 } Patient;
 
+// Structure to store doctor information for schedule
 typedef struct {
   char docName[50];
 } Doctor;
@@ -57,6 +57,11 @@ int main() {
     return 0;
 }
 
+/**
+ * Displays the main menu and handles user choices.
+ * The menu allows operations like adding, displaying, searching,
+ * deleting patients, managing doctor schedules, and exiting.
+ */
 void menu() {
     int choice;
     while (1) {
@@ -93,6 +98,11 @@ void menu() {
     }
 }
 
+/**
+ * Adds a new patient to the system.
+ * Prompts the user for patient details and stores the patient
+ * in the patients array.
+ */
 void addPatient()
 {
     if (patientCount >= MAX_PATIENTS) {
@@ -119,6 +129,13 @@ void addPatient()
     printf("Patient added successfully ID: %d\n", patient.id);
 }
 
+/**
+ * Generates a unique patient ID.
+ * Iterates through possible candidate IDs starting at 1
+ * until it finds an ID not already assigned to a patient.
+ *
+ * @return A unique patient ID.
+ */
 int generatePatientID()
 {
     int candidate = 1;
@@ -137,6 +154,10 @@ int generatePatientID()
     }
 }
 
+/**
+ * Displays all patients currently checked in.
+ * Iterates over the patients array and prints out each patient's details.
+ */
 void displayPatient()
 {
     printf("=== Every Patient currently checked in ===\n");
@@ -155,6 +176,11 @@ void displayPatient()
     }
 }
 
+/**
+ * Searches for a patient either by ID or by name.
+ * Provides a sub-menu to choose the search method, and displays
+ * patient information if found.
+ */
 void searchPatient()
 {
     while (1) {
@@ -268,6 +294,11 @@ void searchPatient()
     } // end while(1)
 }
 
+/**
+ * Deletes a patient from the system.
+ * Prompts the user for a patient ID and removes the corresponding record
+ * from the patients array if it exists.
+ */
 void deletePatient()
 {
     if (patientCount == 0) {
@@ -304,6 +335,10 @@ void deletePatient()
     }
 }
 
+/**
+ * Manages the doctor schedule by displaying a sub-menu.
+ * Options include assigning a doctor to a shift or viewing the weekly schedule.
+ */
 void manageDoctSched() {
   int choice;
   do {
@@ -330,6 +365,11 @@ void manageDoctSched() {
   } while (choice != 3);
 }
 
+
+/**
+ * Assigns a doctor to a specific shift on a specific day.
+ * Checks for any existing assignment before assigning a new doctor.
+ */
 void assignDoctorShift() {
     const char* dayNames[DAY_COUNT] = {
         "Sunday", "Monday", "Tuesday", "Wednesday",
@@ -377,6 +417,11 @@ void assignDoctorShift() {
     }
 }
 
+/**
+ * Displays the weekly doctor schedule.
+ * Iterates through each day and shift, printing the assigned doctor's name
+ * or a message if no doctor is assigned.
+ */
 void viewWeeklySchedule() {
   const char* dayNames[DAY_COUNT] = {
     "Sunday","Monday","Tuesday","Wednesday", "Thursday","Friday","Saturday"
@@ -399,11 +444,16 @@ void viewWeeklySchedule() {
   }
 }
 
+
 /**
- * Prompts the user with `promptMsg`, reads input from stdin,
- * and returns a valid integer in the range [minVal..maxVal].
- * On invalid input (non-integer, out-of-range, etc.), it re-prompts
- * until the user enters a valid integer.
+ * Prompts the user with a message and reads an integer from standard input.
+ * The integer must be within the specified range [minVal, maxVal]. It will
+ * re-prompt on invalid input until a valid integer is entered.
+ *
+ * @param minVal The minimum allowed integer value.
+ * @param maxVal The maximum allowed integer value.
+ * @param promptMsg The message to display when prompting the user.
+ * @return A valid integer within the specified range.
  */
 int getValidInt(int minVal, int maxVal, const char *promptMsg) {
     char buffer[100];
@@ -457,12 +507,14 @@ int getValidInt(int minVal, int maxVal, const char *promptMsg) {
 }
 
 /**
- * Reads a line of input from the user and stores it into 'dest', ensuring:
- *  - The final string is at most 'maxLen' characters long (excluding '\0').
- *  - No leftover characters remain in stdin if the user typed a very long line.
- *  - Trailing newline is removed.
- *  - Rejects empty or whitespace-only input (spaces, tabs, carriage returns).
- *  - Reprompts if the user input exceeds 'maxLen' characters or is invalid.
+ * Reads a line of input from the user into the provided destination buffer.
+ * Ensures that the final string is at most maxLen characters long (excluding the '\0'),
+ * flushes any excess characters, removes the trailing newline, and ensures that the
+ * input is not empty or composed solely of whitespace.
+ *
+ * @param dest The destination buffer where the input string will be stored.
+ * @param maxLen The maximum allowed length for the input (excluding '\0').
+ * @param promptMsg The message to display when prompting the user.
  */
 void getValidString(char *dest, size_t maxLen, const char *promptMsg)
 {

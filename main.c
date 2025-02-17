@@ -240,6 +240,7 @@ void deletePatient()
 {
     if (patientCount == 0) {
         printf("No patients to delete.\n");
+        return;
     }
 
     int id;
@@ -296,7 +297,6 @@ void manageDoctSched() {
 }
 
 void assignDoctorShift() {
-
     const char* dayNames[DAY_COUNT] = {
         "Sunday", "Monday", "Tuesday", "Wednesday",
         "Thursday", "Friday", "Saturday"
@@ -309,9 +309,9 @@ void assignDoctorShift() {
     int day, shift;
     char docName[50];
 
-    day = getValidInt(0, DAY_COUNT, "\nEnter day of the week [0=Sunday, 6=Saturday]: \n");
+    day = getValidInt(0, DAY_COUNT - 1, "\nEnter day of the week [0=Sunday, 6=Saturday]: \n");
 
-    shift = getValidInt(0, DAY_COUNT, "\nEnter shift [0=Morning, 1=Afternoon, 2=Evening]: \n");
+    shift = getValidInt(0, 2, "\nEnter shift [0=Morning, 1=Afternoon, 2=Evening]: \n");
 
     getValidString(docName, 49, "Please enter the Doctor's name: ");
 

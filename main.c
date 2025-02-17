@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
 
 #define MAX_PATIENTS 50
 
@@ -30,6 +32,8 @@ void deletePatient();
 void manageDoctSched();
 void assignDoctorShift();
 void viewWeeklySchedule();
+int getValidInt(int minVal, int maxVal, const char *promptMsg);
+void getValidString(char *dest, size_t maxLen, const char *promptMsg);
 
 // Structure to store patient information
 typedef struct {
@@ -51,7 +55,6 @@ Doctor doctors[DAY_COUNT][SHIFT_COUNT];
 int main() {
     menu();
     return 0;
-
 }
 
 void menu() {
@@ -64,7 +67,8 @@ void menu() {
         printf("4. Discharge Patient\n");
         printf("5. Manage Doctor Schedule\n");
         printf("6. Exit\n");
-        scanf("%d", &choice);
+
+        choice = getValidInt(1, 6, "\nEnter your choice (1-6): \n");
 
         switch (choice)
         {
@@ -88,6 +92,7 @@ void menu() {
         }
     }
 }
+
 void addPatient()
 {
     if (patientCount >= MAX_PATIENTS) {
@@ -97,17 +102,16 @@ void addPatient()
     Patient patient;
     patient.id = generatePatientID();
 
-    printf("Enter patient name: ");
-    scanf(" %[^\n]", patient.name);
+    // We are using this helper function that does not return string because we cannot dynamically assign
+    // arrays to fixed size array in a struct in the runtime.
+    getValidString(patient.name, 99, "Enter patient name: ");
 
-    printf("Enter patient age: ");
-    scanf("%d", &patient.age);
+    // However, we can do that with int. So we make this helper function return an integer and assign it here.
+    patient.age = getValidInt(0, 200, "\nEnter patient age (0-200): \n");
 
-    printf("Enter patient diagnosis: ");
-    scanf(" %[^\n]", patient.diagnosis);
+    getValidString(patient.diagnosis, 300, "Enter patient diagnosis: ");
 
-    printf("Enter patient room number: ");
-    scanf("%d", &patient.roomNumber);
+    patient.roomNumber = getValidInt(0, 9999, "\nEnter patient room number (0-9999): \n");
 
     patients[patientCount] = patient;
     patientCount++;
@@ -343,4 +347,133 @@ void viewWeeklySchedule() {
     }
     printf("\n");
   }
+}
+
+
+/**
+ * Prompts the user with `promptMsg`, reads input from stdin,
+ * and returns a valid integer in the range [minVal..maxVal].
+ * On invalid input (non-integer, out-of-range, etc.), it re-prompts
+ * until the user enters a valid integer.
+ */
+int getValidInt(int minVal, int maxVal, const char *promptMsg) {
+    char buffer[100];
+
+    while (1) {
+        // Show the prompt
+        printf("%s", promptMsg);
+
+        // 1) Read a line of input using fgets
+        // This is to deal with float inputs wrongly parsed as integers
+        if (!fgets(buffer, sizeof(buffer), stdin)) {
+            // If reading fails (EOF or error), prompt again
+            printf("Error reading input. Please try again.\n");
+            continue;
+        }
+
+        // 2) Check if the input line was longer than our buffer
+        //    If there's no '\n' in buffer, we didn't get the entire line
+        //    and must flush the remainder.
+        if (strchr(buffer, '\n') == NULL) {
+            int ch;
+            // Flush until we see a newline or reach EOF
+            while ((ch = getchar()) != '\n' && ch != EOF) {
+                /* discard */
+            }
+        } else {
+            // Remove the trailing newline for convenience
+            buffer[strcspn(buffer, "\n")] = '\0';
+        }
+
+        // 3) Convert the string to a long
+        char *endptr;
+        long num = strtol(buffer, &endptr, 10);
+
+        // 4) If endptr didn't reach the end, we have leftover non-numeric characters
+        if (*endptr != '\0') {
+            printf("Invalid input. Please enter an integer.\n");
+            continue;  // prompt again
+        }
+
+        // 5) Check the range
+        if (num < minVal || num > maxVal) {
+            printf("Out of range. Enter a number between %d and %d.\n",
+                   minVal, maxVal);
+            continue;
+        }
+
+        // 6) If valid, return the integer
+        return (int)num;
+    }
+}
+
+/**
+ * Reads a line of input from the user and stores it into 'dest', ensuring:
+ *  - The final string is at most 'maxLen' characters long (excluding '\0').
+ *  - No leftover characters remain in stdin if the user typed a very long line.
+ *  - Trailing newline is removed.
+ *  - Rejects empty or whitespace-only input (spaces, tabs, carriage returns).
+ *  - Reprompts if the user input exceeds 'maxLen' characters or is invalid.
+ */
+void getValidString(char *dest, size_t maxLen, const char *promptMsg)
+{
+    char buffer[512]; // temp buffer to detect overflow & flush excess
+
+    while (1) {
+        printf("%s", promptMsg);
+
+        // Attempt to read a line (including the newline if it fits)
+        if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
+            // If EOF or an error occurs, prompt again.
+            printf("Error reading input. Please try again.\n");
+            continue;
+        }
+
+        // If we do not find '\n' in buffer, we must flush leftover chars.
+        if (!strchr(buffer, '\n')) {
+            int ch;
+            while ((ch = getchar()) != '\n' && ch != EOF) {
+                /* discard */
+            }
+        } else {
+            // Replace the newline with a null terminator
+            buffer[strcspn(buffer, "\n")] = '\0';
+        }
+
+        // Check length of what we read
+        size_t length = strlen(buffer);
+
+        // 1. Reject empty input
+        if (length == 0) {
+            printf("Input cannot be empty.\n");
+            continue;
+        }
+
+        // 2. Check if the string is all whitespace (spaces, tabs, carriage returns, etc.)
+        int allWhitespace = 1;
+        for (size_t i = 0; i < length; i++) {
+            char c = buffer[i];
+            // Only treat ' ', '\t', '\r' as whitespace here
+            // (You can extend this list as needed, e.g. '\v', '\f' if desired)
+            if (c != ' ' && c != '\t' && c != '\r') {
+                allWhitespace = 0;
+                break;
+            }
+        }
+        if (allWhitespace) {
+            printf("Input cannot be whitespace only.\n");
+            continue;
+        }
+
+        // 3. Check if user typed more than allowed length
+        if (length > maxLen) {
+            printf("Input too long! Maximum allowed is %zu characters.\n", maxLen);
+            continue;
+        }
+
+        // If we get here, it's valid length and not empty/whitespace only
+        strncpy(dest, buffer, maxLen + 1);
+        dest[maxLen] = '\0'; // ensure null termination
+        break;  // success, exit loop
+    }
 }

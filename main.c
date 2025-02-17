@@ -245,8 +245,7 @@ void deletePatient()
     int id;
     int index = -1;
 
-    printf("Please enter Patient ID to delete: ");
-    scanf("%d", &id);
+    id = getValidInt(1, MAX_PATIENTS, "\nPlease enter Patient ID to delete: \n");
 
     for (int i = 0; i < patientCount; i++) {
         if (patients[i].id == id) {
@@ -268,18 +267,17 @@ void deletePatient()
 
     patientCount--;
     printf("Patient with ID %d deleted successfully.\n", id);
-
 }
 
 void manageDoctSched() {
-
   int choice;
   do {
     printf("\n=== Doctor Schedule Management ===\n");
     printf("1. Assign Doctor to a Shift\n");
     printf("2. View Weekly Schedule\n");
     printf("3. Return to Previous Menu\n");
-    scanf("%d", &choice);
+
+    choice = getValidInt(1, 6, "\nEnter your choice (1-3): \n");
 
     switch (choice) {
         case 1:
@@ -293,7 +291,6 @@ void manageDoctSched() {
           break;
         default:
           printf("Invalid Choice! Please try again.\n");
-
     }
   } while (choice != 3);
 }
@@ -312,22 +309,11 @@ void assignDoctorShift() {
     int day, shift;
     char docName[50];
 
-    printf("\nEnter day of the week [0=Sunday, 6=Saturday]: ");
-    scanf("%d", &day);
-    if(day < 0 || day >= DAY_COUNT) {
-      printf("Error: Invalid day!\n");
-      return;
-    }
+    day = getValidInt(0, DAY_COUNT, "\nEnter day of the week [0=Sunday, 6=Saturday]: \n");
 
-    printf("Enter shift [0=Morning, 1=Afternoon, 2=Evening] ");
-    scanf("%d", &shift);
-    if(shift < 0 || shift >= SHIFT_COUNT) {
-      printf("Error: Invalid shift!\n");
-      return;
-    }
+    shift = getValidInt(0, DAY_COUNT, "\nEnter shift [0=Morning, 1=Afternoon, 2=Evening]: \n");
 
-    printf("Please enter the Doctor's name: ");
-    scanf(" %[^\n]", docName);
+    getValidString(docName, 49, "Please enter the Doctor's name: ");
 
     if(strlen(doctors[day][shift].docName) != 0) {
       printf("Error: A doctor is already assigned for %s (%s).\n", dayNames[day], shiftNames[shift]);
@@ -359,7 +345,6 @@ void viewWeeklySchedule() {
     printf("\n");
   }
 }
-
 
 /**
  * Prompts the user with `promptMsg`, reads input from stdin,

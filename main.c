@@ -195,7 +195,8 @@ void searchPatient()
             int found = 0;
             for (int i = 0; i < patientCount; i++) {
 
-                // We first convert both string to lowercase [a-z]
+                // We convert both string to lowercase [a-z]
+                // First, we converted inputName to lowercase
                 for (size_t i = 0; i < strlen(inputName); i++) {
                     if (inputName[i] >= 'A' && inputName[i] <= 'Z') {
                         // Move from 'A'..'Z' to 'a'..'z'
@@ -203,9 +204,9 @@ void searchPatient()
                     }
                 }
 
+                // Then, we convert patient's name to lowercase using temporary variable
                 char tempName[100];
                 strcpy(tempName, patients[i].name);
-
                 for (size_t i = 0; i < strlen(tempName); i++) {
                     if (tempName[i] >= 'A' && tempName[i] <= 'Z') {
                         // Move from 'A'..'Z' to 'a'..'z'

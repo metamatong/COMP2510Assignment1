@@ -109,7 +109,7 @@ void addPatient()
     // However, we can do that with int. So we make this helper function return an integer and assign it here.
     patient.age = getValidInt(0, 200, "\nEnter patient age (0-200): \n");
 
-    getValidString(patient.diagnosis, 300, "Enter patient diagnosis: ");
+    getValidString(patient.diagnosis, 200, "Enter patient diagnosis: ");
 
     patient.roomNumber = getValidInt(0, 9999, "\nEnter patient room number (0-9999): \n");
 

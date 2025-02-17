@@ -109,7 +109,7 @@ void addPatient()
     // However, we can do that with int. So we make this helper function return an integer and assign it here.
     patient.age = getValidInt(0, 200, "\nEnter patient age (0-200): \n");
 
-    getValidString(patient.diagnosis, 200, "Enter patient diagnosis: ");
+    getValidString(patient.diagnosis, 199, "Enter patient diagnosis: ");
 
     patient.roomNumber = getValidInt(0, 9999, "\nEnter patient room number (0-9999): \n");
 
@@ -153,8 +153,6 @@ void displayPatient()
         printf("Patient Room No.: %d\n", patients[i].roomNumber);
         printf("\n");
     }
-
-
 }
 
 void searchPatient()
@@ -163,47 +161,59 @@ void searchPatient()
     printf("Enter how you would like to search patient: \n");
     printf("1. by ID\n");
     printf("2. by name\n");
-    scanf("%d", &choice);
+    choice = getValidInt(1, 2, "");
 
     switch (choice)
     {
         case 1: {
             int inputId;
-            printf("Enter the ID of the patient you are looking for: \n");
-            scanf("%d", &inputId);
-            if (inputId < 0) {
-                printf("Error: ID cannot be negative.\n", inputId);
-            } else {
-                int found = 0;
-                for (int i = 0; i < patientCount; i++) {
-                    if (inputId == patients[i].id) {
-                        printf("\nPatient Found:\n");
-                        printf("Patient ID: %d\n", patients[i].id);
-                        printf("Patient Name: %s\n", patients[i].name);
-                        printf("Patient Age: %d\n", patients[i].age);
-                        printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
-                        printf("Patient Room No.: %d\n", patients[i].roomNumber);
-                        printf("\n");
-                        found = 1;
-                        break;
-                    }
-                }
-                if (!found) {
-                    printf("Error: Patient Not Found!\n");
-                }
-                break;
-            }
-        }
-        case 2: {
-            char inputName[100];
-            printf("Enter the name of the patient you are looking for: ");
-            scanf(" %[^\n]", inputName);
-            if (inputName[0] == '\0') {
-                printf("Error: Empty Name!\n");
-            }
+            inputId = getValidInt(0, 9999, "Enter the ID of the patient you are looking for: ");
+
             int found = 0;
             for (int i = 0; i < patientCount; i++) {
-                if (strcmp(inputName, patients[i].name) == 0) {
+                if (inputId == patients[i].id) {
+                    printf("\nPatient Found:\n");
+                    printf("Patient ID: %d\n", patients[i].id);
+                    printf("Patient Name: %s\n", patients[i].name);
+                    printf("Patient Age: %d\n", patients[i].age);
+                    printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
+                    printf("Patient Room No.: %d\n", patients[i].roomNumber);
+                    printf("\n");
+                    found = 1;
+                    break;
+                }
+            }
+            if (!found) {
+                printf("Error: Patient Not Found!\n");
+            }
+            break;
+        }
+
+        case 2: {
+            char inputName[100];
+            getValidString(inputName, 99, "Enter the name of the patient you are looking for: ");
+            int found = 0;
+            for (int i = 0; i < patientCount; i++) {
+
+                // We first convert both string to lowercase [a-z]
+                for (size_t i = 0; i < strlen(inputName); i++) {
+                    if (inputName[i] >= 'A' && inputName[i] <= 'Z') {
+                        // Move from 'A'..'Z' to 'a'..'z'
+                        inputName[i] = inputName[i] + ('a' - 'A');
+                    }
+                }
+
+                char tempName[100];
+                strcpy(tempName, patients[i].name);
+
+                for (size_t i = 0; i < strlen(tempName); i++) {
+                    if (tempName[i] >= 'A' && tempName[i] <= 'Z') {
+                        // Move from 'A'..'Z' to 'a'..'z'
+                        tempName[i] = tempName[i] + ('a' - 'A');
+                    }
+                }
+
+                if (strcmp(inputName, tempName) == 0) {
                     printf("\nPatient Found:\n");
                     printf("Patient ID: %d\n", patients[i].id);
                     printf("Patient Name: %s\n", patients[i].name);
@@ -474,6 +484,7 @@ void getValidString(char *dest, size_t maxLen, const char *promptMsg)
         // If we get here, it's valid length and not empty/whitespace only
         strncpy(dest, buffer, maxLen + 1);
         dest[maxLen] = '\0'; // ensure null termination
+
         break;  // success, exit loop
     }
 }

@@ -157,83 +157,110 @@ void displayPatient()
 
 void searchPatient()
 {
-    int choice;
-    printf("Enter how you would like to search patient: \n");
-    printf("1. by ID\n");
-    printf("2. by name\n");
-    choice = getValidInt(1, 2, "");
+    while (1) {
+        printf("\n-- Search for a Patient --\n");
+        printf("1. By ID\n");
+        printf("2. By Name\n");
+        printf("3. Return to Main Menu\n");
 
-    switch (choice)
-    {
-        case 1: {
-            int inputId;
-            inputId = getValidInt(0, 9999, "Enter the ID of the patient you are looking for: ");
+        // Allow user to pick 1, 2, or 3
+        int choice = getValidInt(1, 3, "\nEnter choice (1-3): \n");
 
-            int found = 0;
-            for (int i = 0; i < patientCount; i++) {
-                if (inputId == patients[i].id) {
-                    printf("\nPatient Found:\n");
-                    printf("Patient ID: %d\n", patients[i].id);
-                    printf("Patient Name: %s\n", patients[i].name);
-                    printf("Patient Age: %d\n", patients[i].age);
-                    printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
-                    printf("Patient Room No.: %d\n", patients[i].roomNumber);
-                    printf("\n");
-                    found = 1;
-                    break;
-                }
-            }
-            if (!found) {
-                printf("Error: Patient Not Found!\n");
-            }
-            break;
+        // If user picks '3', just go back to main menu
+        if (choice == 3) {
+            return;
         }
 
-        case 2: {
-            char inputName[100];
-            getValidString(inputName, 99, "Enter the name of the patient you are looking for: ");
-            int found = 0;
-            for (int i = 0; i < patientCount; i++) {
+        switch (choice)
+        {
+            case 1: {
+                // Keep asking for an ID until found or user cancels
+                while (1) {
+                    int inputId = getValidInt(0, 9999,
+                        "\nEnter the ID of the patient: \n");
 
-                // We convert both string to lowercase [a-z]
-                // First, we converted inputName to lowercase
-                for (size_t i = 0; i < strlen(inputName); i++) {
-                    if (inputName[i] >= 'A' && inputName[i] <= 'Z') {
-                        // Move from 'A'..'Z' to 'a'..'z'
-                        inputName[i] = inputName[i] + ('a' - 'A');
+                    int found = 0;
+                    for (int i = 0; i < patientCount; i++) {
+                        if (patients[i].id == inputId) {
+                            printf("\nPatient Found:\n");
+                            printf("Patient ID: %d\n", patients[i].id);
+                            printf("Patient Name: %s\n", patients[i].name);
+                            printf("Patient Age: %d\n", patients[i].age);
+                            printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
+                            printf("Patient Room No.: %d\n\n", patients[i].roomNumber);
+
+                            found = 1;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        printf("Error: Patient Not Found! Please try again.\n");
+                    } else {
+                        // Once found, we can break out of the inner loop
+                        break;
                     }
                 }
+                break;
+            }
 
-                // Then, we convert patient's name to lowercase using temporary variable
-                char tempName[100];
-                strcpy(tempName, patients[i].name);
-                for (size_t i = 0; i < strlen(tempName); i++) {
-                    if (tempName[i] >= 'A' && tempName[i] <= 'Z') {
-                        // Move from 'A'..'Z' to 'a'..'z'
-                        tempName[i] = tempName[i] + ('a' - 'A');
+            case 2: {
+                // Keep asking for a name until found or user types 'cancel'
+                while (1) {
+                    char inputName[100];
+                    getValidString(inputName, 99,
+                        "\nEnter the patient's name (or type 'cancel' to go back): ");
+
+                    // If user wants to cancel name search
+                    if (strcmp(inputName, "cancel") == 0) {
+                        break; // go back to choice menu
+                    }
+
+                    // Convert inputName to lowercase in-place
+                    for (size_t k = 0; k < strlen(inputName); k++) {
+                        if (inputName[k] >= 'A' && inputName[k] <= 'Z') {
+                            inputName[k] = inputName[k] + ('a' - 'A');
+                        }
+                    }
+
+                    int found = 0;
+                    for (int i = 0; i < patientCount; i++) {
+                        // Make a temp copy of this patient's name
+                        char tempName[100];
+                        strcpy(tempName, patients[i].name);
+
+                        // Convert tempName to lowercase
+                        for (size_t j = 0; j < strlen(tempName); j++) {
+                            if (tempName[j] >= 'A' && tempName[j] <= 'Z') {
+                                tempName[j] = tempName[j] + ('a' - 'A');
+                            }
+                        }
+
+                        // Compare the lowercase versions
+                        if (strcmp(inputName, tempName) == 0) {
+                            printf("\nPatient Found:\n");
+                            printf("Patient ID: %d\n", patients[i].id);
+                            printf("Patient Name: %s\n", patients[i].name);
+                            printf("Patient Age: %d\n", patients[i].age);
+                            printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
+                            printf("Patient Room No.: %d\n\n", patients[i].roomNumber);
+
+                            found = 1;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        printf("Error: Patient Not Found! Please try again.\n");
+                    } else {
+                        // Once found, break out of the inner loop
+                        break;
                     }
                 }
-
-                if (strcmp(inputName, tempName) == 0) {
-                    printf("\nPatient Found:\n");
-                    printf("Patient ID: %d\n", patients[i].id);
-                    printf("Patient Name: %s\n", patients[i].name);
-                    printf("Patient Age: %d\n", patients[i].age);
-                    printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
-                    printf("Patient Room No.: %d\n", patients[i].roomNumber);
-                    printf("\n");
-                    found = 1;
-                    break;
-                }
+                break;
             }
-            if (!found) {
-                printf("Error: Patient Not Found!\n");
-            }
-            break;
-        }
-        default:
-            printf("Invalid Choice!\n");
-    }
+        } // end switch
+    } // end while(1)
 }
 
 void deletePatient()
@@ -242,32 +269,34 @@ void deletePatient()
         printf("No patients to delete.\n");
         return;
     }
+    while (1) {
+        int id = getValidInt(1, 9999, "Please enter Patient ID to delete (or 0 to cancel): ");
+        if (id == 0) {
+            // user canceled
+            return;
+        }
 
-    int id;
-    int index = -1;
+        int index = -1;
+        for (int i = 0; i < patientCount; i++) {
+            if (patients[i].id == id) {
+                index = i;
+                break;
+            }
+        }
 
-    id = getValidInt(1, MAX_PATIENTS, "\nPlease enter Patient ID to delete: \n");
-
-    for (int i = 0; i < patientCount; i++) {
-        if (patients[i].id == id) {
-            index = i;
-            break;
+        if (index == -1) {
+            printf("Error: Patient with ID %d not found. Please try again.\n", id);
+        }
+        else {
+            // shift patients array to “delete” the record
+            for (int i = index; i < patientCount - 1; i++) {
+                patients[i] = patients[i + 1];
+            }
+            patientCount--;
+            printf("Patient with ID %d deleted successfully.\n", id);
+            break; // exit loop
         }
     }
-
-    if (index == -1)
-        {
-        printf("Error: Patient with ID %d not found.\n", id);
-        return;
-    }
-
-    for (int i = index; i < patientCount - 1; i++)
-        {
-        patients[i] = patients[i + 1];
-    }
-
-    patientCount--;
-    printf("Patient with ID %d deleted successfully.\n", id);
 }
 
 void manageDoctSched() {
@@ -278,7 +307,7 @@ void manageDoctSched() {
     printf("2. View Weekly Schedule\n");
     printf("3. Return to Previous Menu\n");
 
-    choice = getValidInt(1, 6, "\nEnter your choice (1-3): \n");
+    choice = getValidInt(1, 3, "\nEnter your choice (1-3): \n");
 
     switch (choice) {
         case 1:

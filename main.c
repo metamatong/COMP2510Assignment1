@@ -167,8 +167,8 @@ void searchPatient()
             int inputId;
             printf("Enter the ID of the patient you are looking for: \n");
             scanf("%d", &inputId);
-            if (inputId > patientCount || inputId < 0) {
-                printf("Error: Invalid ID!\n", inputId);
+            if (inputId < 0) {
+                printf("Error: ID cannot be negative.\n", inputId);
             } else {
                 int found = 0;
                 for (int i = 0; i < patientCount; i++) {

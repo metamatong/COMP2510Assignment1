@@ -3,6 +3,8 @@
 #include <stdlib.h>
 
 #define MAX_PATIENTS 50
+#define DAY_COUNT 7
+#define SHIFT_COUNT 3
 
 typedef enum {
   SUNDAY,
@@ -12,14 +14,12 @@ typedef enum {
   THURSDAY,
   FRIDAY,
   SATURDAY,
-  DAY_COUNT
 } Day;
 
 typedef enum {
     MORNING,
     AFTERNOON,
     EVENING,
-    SHIFT_COUNT
 } Shift;
 
 int generatePatientID();

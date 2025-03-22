@@ -68,34 +68,13 @@ void assignDoctorShift(void) {
             printf("Doctor '%s' assigned to %s (%s) successfully!\n",
                    docName, DAY_NAMES[day], SHIFT_NAMES[shift]);
 
-            // save it in a file
+            // prepare to save the schedule into a structure
             strncpy(schedule.docName, docName, MAX_DOC_NAME);
+            schedule.day = day;
+            schedule.shift = shift;
 
-            const char *tempDayNames[DAY_COUNT] = {
-                "Sunday", "Monday", "Tuesday",
-                "Wednesday", "Thursday", "Friday", "Saturday"
-            };
-            const char *tempShiftNames[SHIFT_COUNT] = {
-                "Morning", "Afternoon", "Evening"
-            };
-
-            for (int i = 0; i < DAY_COUNT; i++) {
-                strncpy(schedule.dayNames[i], tempDayNames[i], MAX_DAY_NAME);
-            }
-
-            for (int i = 0; i < SHIFT_COUNT; i++) {
-                strncpy(schedule.shiftNames[i], tempShiftNames[i], MAX_SHIFT_NAME);
-            }
-
-            FILE* file;
-            file = fopen("../schedule.bin", "ab");
-            if (file == NULL) {
-                perror("Error opening file");
-                break;
-            }
-            fwrite(&schedule, sizeof(Schedule), 1, file);
-            fflush(file);
-            fclose(file);
+            // call saveSchedule() function to write it in a file.
+            saveSchedule(schedule);
             break;
         }
     }
@@ -110,18 +89,60 @@ void viewWeeklySchedule(void) {
         "Morning", "Afternoon", "Evening"
     };
 
+    // Create a temporary 2D array to store assignments.
+    char assignments[DAY_COUNT][SHIFT_COUNT][MAX_DOC_NAME];
+
+    // Initialize all assignments to an empty string.
+    for (int i = 0; i < DAY_COUNT; i++) {
+        for (int j = 0; j < SHIFT_COUNT; j++) {
+            assignments[i][j][0] = '\0';
+        }
+    }
+
+    // Open the file in binary read mode.
+    FILE *file = fopen("../schedule.bin", "rb");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+    Schedule schedule;
+    // Read each schedule record and update the appropriate slot.
+    while (fread(&schedule, sizeof(Schedule), 1, file) == 1) {
+        if (schedule.day >= 0 && schedule.day < DAY_COUNT &&
+            schedule.shift >= 0 && schedule.shift < SHIFT_COUNT) {
+            // If multiple records exist for the same day/shift,
+            // the latest record will overwrite previous ones.
+            strcpy(assignments[schedule.day][schedule.shift], schedule.docName);
+            }
+    }
+    fclose(file);
+
+    // Print out the weekly schedule.
     printf("\n=== Weekly Doctor Schedule ===\n");
     for (int i = 0; i < DAY_COUNT; i++) {
         for (int j = 0; j < SHIFT_COUNT; j++) {
-            if (strlen(doctors[i][j].docName) == 0) {
+            if (assignments[i][j][0] == '\0') {
                 printf("%-9s (%-9s): [No Doctor Assigned]\n",
                        dayNames[i], shiftNames[j]);
             } else {
                 printf("%-9s (%-9s): Dr. %s\n",
                        dayNames[i], shiftNames[j],
-                       doctors[i][j].docName);
+                       assignments[i][j]);
             }
         }
         printf("\n");
     }
+}
+
+void saveSchedule(Schedule schedule) {
+    FILE *file = fopen("../schedule.bin", "ab");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+    if (fwrite(&schedule, sizeof(Schedule), 1, file) != 1) {
+        perror("Error writing schedule to file");
+    }
+    fflush(file);
+    fclose(file);
 }

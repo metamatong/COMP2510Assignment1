@@ -555,7 +555,6 @@ void getValidString(char *dest, size_t maxLen, const char *promptMsg)
         for (size_t i = 0; i < length; i++) {
             char c = buffer[i];
             // Only treat ' ', '\t', '\r' as whitespace here
-            // (You can extend this list as needed, e.g. '\v', '\f' if desired)
             if (c != ' ' && c != '\t' && c != '\r') {
                 allWhitespace = 0;
                 break;

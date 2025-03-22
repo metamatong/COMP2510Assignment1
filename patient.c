@@ -4,193 +4,156 @@
 #include "patient.h"
 #include "utils.h"
 
+// Global head pointer for the linked list.
+Patient *head = NULL;
 
-int patientCount = 0;
-int allocatedPatients = INITIAL_PATIENT_CAPACITY;
-Patient *patients = NULL;
+// Global variable for generating unique IDs.
+int nextPatientID = 1;
 
 int generatePatientID(void) {
-    int candidate = 1;
-    while (1) {
-        int found = 0;
-        for (int i = 0; i < patientCount; i++) {
-            if (patients[i].id == candidate) {
-                found = 1;
-                break;
-            }
-        }
-        if (!found) {
-            return candidate;
-        }
-        candidate++;
-    }
+    return nextPatientID++;
 }
 
 void addPatient(void) {
-
-    if (patientCount >= allocatedPatients) {
-        allocatedPatients *= 2;  // Double the capacity
-        Patient *temp = realloc(patients, allocatedPatients * sizeof(Patient));
-        if (temp == NULL) {
-            fprintf(stderr, "Memory reallocation failed!\n");
-            exit(1);
-        }
-        patients = temp;
+    Patient *newPatient = malloc(sizeof(Patient));
+    if (newPatient == NULL) {
+        fprintf(stderr, "Error allocating memory for newPatient\n");
+        exit(1);
     }
-    Patient patient;
-    patient.id = generatePatientID();
+    newPatient->id = generatePatientID();
+    newPatient->next = NULL;
 
-    getValidString(patient.name, 99, "Enter patient name: ");
-    patient.age = getValidInt(0, 200, "\nEnter patient age (0-200): \n");
-    getValidString(patient.diagnosis, 199, "Enter patient diagnosis: ");
-    patient.roomNumber = getValidInt(0, 9999, "\nEnter patient room number (0-9999): \n");
+    getValidString(newPatient->name, 99, "Enter patient name: \n");
+    newPatient->age = getValidInt(0, 200, "Enter patient age (0-200): \n");
+    getValidString(newPatient->diagnosis, 199, "Enter patient diagnosis: \n");
+    newPatient->roomNumber = getValidInt(0, 9999, "Enter patient room number (0-9999): \n");
 
-    patients[patientCount] = patient;
-    patientCount++;
+    if (head == NULL) {
+        head = newPatient;
+    } else {
+        Patient *current = head;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = newPatient;
+    }
 
-    printf("Patient added successfully! ID: %d\n", patient.id);
+    printf("Patient added successfully! ID: %d\n", newPatient->id);
 }
 
 void displayPatient(void) {
     printf("=== All Patients Currently Checked In ===\n");
-    if (patientCount == 0) {
+    if (head == NULL) {
         printf("No patients to display.\n");
         return;
     }
-
-    for (int i = 0; i < patientCount; i++) {
-        printf("Patient ID: %d\n", patients[i].id);
-        printf("Patient Name: %s\n", patients[i].name);
-        printf("Patient Age: %d\n", patients[i].age);
-        printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
-        printf("Patient Room No.: %d\n\n", patients[i].roomNumber);
+    Patient *current = head;
+    while (current != NULL) {
+        printf("\nPatient ID: %d\n", current->id);
+        printf("Patient Name: %s\n", current->name);
+        printf("Patient Age: %d\n", current->age);
+        printf("Patient Diagnosis: %s\n", current->diagnosis);
+        printf("Patient Room No.: %d\n", current->roomNumber);
+        current = current->next;
     }
+}
+
+void searchPatientByID(void) {
+    int searchId = getValidInt(-1, 9999, "\nEnter the Patient ID to search: ");
+    if (searchId == -1) {
+        return;
+    }
+    Patient *current = head;
+    while (current != NULL) {
+        if (current->id == searchId) {
+            printf("\nPatient Found:\n");
+            printf("Patient ID: %d\n", current->id);
+            printf("Patient Name: %s\n", current->name);
+            printf("Patient Age: %d\n", current->age);
+            printf("Patient Diagnosis: %s\n", current->diagnosis);
+            printf("Patient Room No.: %d\n\n", current->roomNumber);
+            return;
+        }
+        current = current->next;
+    }
+    printf("Error: Patient with ID %d not found!\n", searchId);
+}
+
+void searchPatientByName(void) {
+    char searchName[100];
+    getValidString(searchName, 99, "\nEnter the Patient Name to search: ");
+    if (strcmp(searchName, "-1") == 0) {
+        return;
+    }
+
+    char searchNameLower[100];
+    strcpy(searchNameLower, searchName);
+    toLowerCase(searchNameLower);
+
+    Patient *current = head;
+    while (current != NULL) {
+        char currentNameLower[100];
+        strcpy(currentNameLower, current->name);
+        toLowerCase(currentNameLower);
+        if (strcmp(currentNameLower, searchNameLower) == 0) {
+            printf("\nPatient Found:\n");
+            printf("Patient ID: %d\n", current->id);
+            printf("Patient Name: %s\n", current->name);
+            printf("Patient Age: %d\n", current->age);
+            printf("Patient Diagnosis: %s\n", current->diagnosis);
+            printf("Patient Room No.: %d\n\n", current->roomNumber);
+            return;
+        }
+        current = current->next;
+    }
+    printf("Error: Patient with name '%s' not found!\n", searchName);
 }
 
 void searchPatient(void) {
     while (1) {
-        printf("\n-- Search for a Patient --\n");
-        printf("1. By ID\n");
-        printf("2. By Name\n");
+        printf("Search Options:\n");
+        printf("1. Search by ID\n");
+        printf("2. Search by Name\n");
         printf("3. Return to Main Menu\n");
 
-        int choice = getValidInt(1, 3, "\nEnter choice (1-3): \n");
-        if (choice == 3) {
-            return; // back to main menu
-        }
+        int choice = getValidInt(1, 3, "Enter your choice: ");
 
-        switch (choice) {
-            case 1: {
-                while (1) {
-                    int inputId = getValidInt(-1, 9999,
-                        "\nEnter the ID of the patient (or -1 to cancel): \n");
-
-                    if (inputId == -1) {
-                        break;
-                    }
-
-                    int found = 0;
-                    for (int i = 0; i < patientCount; i++) {
-                        if (patients[i].id == inputId) {
-                            printf("\nPatient Found:\n");
-                            printf("Patient ID: %d\n", patients[i].id);
-                            printf("Patient Name: %s\n", patients[i].name);
-                            printf("Patient Age: %d\n", patients[i].age);
-                            printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
-                            printf("Patient Room No.: %d\n\n", patients[i].roomNumber);
-                            found = 1;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        printf("Error: Patient Not Found! Please try again.\n");
-                    } else {
-                        break;
-                    }
-                }
-                break;
-            }
-
-            case 2: {
-                while (1) {
-                    char inputName[100];
-                    getValidString(inputName, 99,
-                        "\nEnter the patient's name (or 'cancel' to go back): ");
-
-                    if (strcmp(inputName, "cancel") == 0) {
-                        break;
-                    }
-
-                    // Convert inputName to lowercase
-                    for (size_t k = 0; k < strlen(inputName); k++) {
-                        if (inputName[k] >= 'A' && inputName[k] <= 'Z') {
-                            inputName[k] += ('a' - 'A');
-                        }
-                    }
-
-                    int found = 0;
-                    for (int i = 0; i < patientCount; i++) {
-                        char tempName[100];
-                        strcpy(tempName, patients[i].name);
-                        // Convert to lowercase
-                        for (size_t j = 0; j < strlen(tempName); j++) {
-                            if (tempName[j] >= 'A' && tempName[j] <= 'Z') {
-                                tempName[j] += ('a' - 'A');
-                            }
-                        }
-                        if (strcmp(inputName, tempName) == 0) {
-                            printf("\nPatient Found:\n");
-                            printf("Patient ID: %d\n", patients[i].id);
-                            printf("Patient Name: %s\n", patients[i].name);
-                            printf("Patient Age: %d\n", patients[i].age);
-                            printf("Patient Diagnosis: %s\n", patients[i].diagnosis);
-                            printf("Patient Room No.: %d\n\n", patients[i].roomNumber);
-                            found = 1;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        printf("Error: Patient Not Found! Please try again.\n");
-                    } else {
-                        break;
-                    }
-                }
-                break;
-            }
+        if (choice == 1) {
+            searchPatientByID();
+        } else if (choice == 2) {
+            searchPatientByName();
+        } else if (choice == 3) {
+            return;
         }
     }
 }
 
 void deletePatient(void) {
-    if (patientCount == 0) {
+    int idToDelete = getValidInt(1, 9999, "Enter Patient ID to delete: ");
+    if (head == NULL) {
         printf("No patients to delete.\n");
         return;
     }
-    while (1) {
-        int id = getValidInt(1, 9999,
-            "Please enter Patient ID to delete (or 0 to cancel): ");
-        if (id == 0) {
+
+    if (head->id == idToDelete) {
+        Patient *temp = head;
+        head = head->next;
+        free(temp);
+        printf("Patient with ID %d deleted successfully.\n", idToDelete);
+        return;
+    }
+
+    Patient *current = head;
+    Patient *prev = NULL;
+    while (current != NULL) {
+        if (current->id == idToDelete) {
+            prev->next = current->next;
+            free(current);
+            printf("Patient with ID %d deleted successfully.\n", idToDelete);
             return;
         }
-
-        int index = -1;
-        for (int i = 0; i < patientCount; i++) {
-            if (patients[i].id == id) {
-                index = i;
-                break;
-            }
-        }
-
-        if (index == -1) {
-            printf("Error: Patient with ID %d not found. Please try again.\n", id);
-        } else {
-            // Shift array to remove the entry
-            for (int i = index; i < patientCount - 1; i++) {
-                patients[i] = patients[i + 1];
-            }
-            patientCount--;
-            printf("Patient with ID %d deleted successfully.\n", id);
-            break;
-        }
+        prev = current;
+        current = current->next;
     }
+    printf("Error: Patient with ID %d not found.\n", idToDelete);
 }

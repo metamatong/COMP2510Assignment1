@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include "utils.h"
@@ -83,5 +84,11 @@ void getValidString(char *dest, size_t maxLen, const char *promptMsg) {
         strncpy(dest, buffer, maxLen + 1);
         dest[maxLen] = '\0';
         break;
+    }
+}
+
+void toLowerCase(char *str) {
+    for (; *str; ++str) {
+        *str = tolower(*str);
     }
 }

@@ -7,12 +7,6 @@
 
 void menu(void) {
 
-    patients = malloc(INITIAL_PATIENT_CAPACITY * sizeof(Patient));
-    if (patients == NULL) {
-        fprintf(stderr, "Memory allocation failed!\n");
-        exit(1);
-    }
-
     int choice;
     while (1) {
         printf("\n=== Hospital Management System ===\n");
@@ -42,7 +36,11 @@ void menu(void) {
                 manageDoctSched();
             break;
             case 6:
-                free(patients);
+                while (head != NULL) {
+                    Patient *temp = head;
+                    head = head->next;
+                    free(temp);
+                }
                 return;
         }
     }

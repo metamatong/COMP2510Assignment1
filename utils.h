@@ -5,5 +5,6 @@
 
 int  getValidInt(int minVal, int maxVal, const char *promptMsg);
 void getValidString(char *dest, size_t maxLen, const char *promptMsg);
+void toLowerCase(char *str);
 
 #endif

@@ -9,12 +9,10 @@ typedef struct {
     int age;
     char diagnosis[200];
     int roomNumber;
+    struct Patient *next;
 } Patient;
 
-// Expose extern variables (defined in patient.c)
-extern int patientCount;
-extern int allocatedPatients;
-extern Patient *patients;
+extern Patient *head;
 
 // Prototypes for patient functions
 int  generatePatientID(void);
@@ -22,5 +20,8 @@ void addPatient(void);
 void displayPatient(void);
 void searchPatient(void);
 void deletePatient(void);
+void searchPatientByName(void);
+void searchPatientByID(void);
+
 
 #endif

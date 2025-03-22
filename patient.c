@@ -1,11 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "patient.h"
 #include "utils.h"
 
 
 int patientCount = 0;
-Patient patients[MAX_PATIENTS];
+int allocatedPatients = INITIAL_PATIENT_CAPACITY;
+Patient *patients = NULL;
 
 int generatePatientID(void) {
     int candidate = 1;
@@ -25,9 +27,15 @@ int generatePatientID(void) {
 }
 
 void addPatient(void) {
-    if (patientCount >= MAX_PATIENTS) {
-        printf("Error: Too many patients!\n");
-        return;
+
+    if (patientCount >= allocatedPatients) {
+        allocatedPatients *= 2;  // Double the capacity
+        Patient *temp = realloc(patients, allocatedPatients * sizeof(Patient));
+        if (temp == NULL) {
+            fprintf(stderr, "Memory reallocation failed!\n");
+            exit(1);
+        }
+        patients = temp;
     }
     Patient patient;
     patient.id = generatePatientID();

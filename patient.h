@@ -13,7 +13,8 @@ typedef struct {
 
 // Expose extern variables (defined in patient.c)
 extern int patientCount;
-extern Patient patients[];
+extern int allocatedPatients;
+extern Patient *patients;
 
 // Prototypes for patient functions
 int  generatePatientID(void);

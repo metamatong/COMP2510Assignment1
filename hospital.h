@@ -1,7 +1,7 @@
 #ifndef HOSPITAL_H
 #define HOSPITAL_H
 
-#define MAX_PATIENTS 50
+#define INITIAL_PATIENT_CAPACITY 50
 #define DAY_COUNT    7
 #define SHIFT_COUNT  3
 

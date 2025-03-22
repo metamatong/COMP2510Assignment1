@@ -32,15 +32,17 @@ void manageDoctSched(void) {
 }
 
 void assignDoctorShift(void) {
-    const char *dayNames[DAY_COUNT] = {
+    const char *const DAY_NAMES[DAY_COUNT] = {
         "Sunday", "Monday", "Tuesday",
         "Wednesday", "Thursday", "Friday", "Saturday"
     };
-    const char *shiftNames[SHIFT_COUNT] = {
+
+    const char *const SHIFT_NAMES[SHIFT_COUNT] = {
         "Morning", "Afternoon", "Evening"
     };
 
     char docName[50];
+    Schedule schedule;
 
     while (1) {
         printf("\n-- Assign Doctor to a Shift --\n");
@@ -59,12 +61,41 @@ void assignDoctorShift(void) {
 
         if (strlen(doctors[day][shift].docName) != 0) {
             printf("Error: A doctor is already assigned for %s (%s).\n",
-                   dayNames[day], shiftNames[shift]);
+                   DAY_NAMES[day], SHIFT_NAMES[shift]);
             printf("Please try again.\n\n");
         } else {
             strcpy(doctors[day][shift].docName, docName);
             printf("Doctor '%s' assigned to %s (%s) successfully!\n",
-                   docName, dayNames[day], shiftNames[shift]);
+                   docName, DAY_NAMES[day], SHIFT_NAMES[shift]);
+
+            // save it in a file
+            strncpy(schedule.docName, docName, MAX_DOC_NAME);
+
+            const char *tempDayNames[DAY_COUNT] = {
+                "Sunday", "Monday", "Tuesday",
+                "Wednesday", "Thursday", "Friday", "Saturday"
+            };
+            const char *tempShiftNames[SHIFT_COUNT] = {
+                "Morning", "Afternoon", "Evening"
+            };
+
+            for (int i = 0; i < DAY_COUNT; i++) {
+                strncpy(schedule.dayNames[i], tempDayNames[i], MAX_DAY_NAME);
+            }
+
+            for (int i = 0; i < SHIFT_COUNT; i++) {
+                strncpy(schedule.shiftNames[i], tempShiftNames[i], MAX_SHIFT_NAME);
+            }
+
+            FILE* file;
+            file = fopen("../schedule.bin", "ab");
+            if (file == NULL) {
+                perror("Error opening file");
+                break;
+            }
+            fwrite(&schedule, sizeof(Schedule), 1, file);
+            fflush(file);
+            fclose(file);
             break;
         }
     }

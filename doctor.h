@@ -3,13 +3,19 @@
 
 #define DAY_COUNT    7
 #define SHIFT_COUNT  3
+#define MAX_DOC_NAME 50
+#define MAX_DAY_NAME 10
+#define MAX_SHIFT_NAME 10
 
 typedef struct {
     char docName[50];
 } Doctor;
 
-// reference to the doctors 2D array
-extern Doctor doctors[DAY_COUNT][SHIFT_COUNT];
+typedef struct {
+    char docName[MAX_DOC_NAME];
+    char dayNames[DAY_COUNT][MAX_DAY_NAME];
+    char shiftNames[SHIFT_COUNT][MAX_SHIFT_NAME];
+} Schedule;
 
 // prototypes for doctor-related functions
 void manageDoctSched(void);

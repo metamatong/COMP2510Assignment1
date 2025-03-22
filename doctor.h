@@ -1,7 +1,8 @@
 #ifndef DOCTOR_H
 #define DOCTOR_H
 
-#include "hospital.h"
+#define DAY_COUNT    7
+#define SHIFT_COUNT  3
 
 typedef struct {
     char docName[50];

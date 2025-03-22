@@ -1,8 +1,6 @@
 #ifndef PATIENT_H
 #define PATIENT_H
 
-#include "hospital.h"
-
 typedef struct {
     int id;
     char name[100];

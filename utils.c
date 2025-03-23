@@ -2,6 +2,9 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
+#include <time.h>
+#include <unistd.h>
 #include "utils.h"
 #include "globals.h"
 #include "doctor.h"
@@ -85,6 +88,84 @@ void loadPatients(void) {
             current->next = newPatient;
         }
     }
+}
+
+
+
+void backupRoutine(void) {
+    // Flush the schedule file to ensure all data is written.
+    // This line forces any data still in the output buffer of the open schedule file to be written to disk.
+    // This guarantees that the in-memory file state is current before creating the backup.
+    fflush(scheduleFile);
+
+    // Get the current time for timestamping.
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+
+    // Backup docotr schedule
+    char scheduleBackupFilename[256];
+    strftime(scheduleBackupFilename, sizeof(scheduleBackupFilename), "../schedule_backup_%Y%m%d%H%M.bin", tm_info);
+    FILE *scheduleBackupFile = fopen(scheduleBackupFilename, "wb");
+    if (scheduleBackupFile == NULL) {
+        perror("Error opening schedule backup file");
+    } else {
+        size_t written = fwrite(scheduleList, sizeof(Schedule), scheduleCount, scheduleBackupFile);
+        if (written != scheduleCount) {
+            perror("Error writing schedule backup file");
+        } else {
+            printf("Schedule backup created: %s\n", scheduleBackupFilename);
+        }
+        fclose(scheduleBackupFile);
+    }
+
+    // Backup patient schedule
+    // Flush the patients file too.
+    fflush(patientsFile);
+
+    char patientBackupFilename[256];
+    strftime(patientBackupFilename, sizeof(patientBackupFilename), "../patients_backup_%Y%m%d%H%M.bin", tm_info);
+    FILE *patientBackupFile = fopen(patientBackupFilename, "wb");
+    if (patientBackupFile == NULL) {
+        perror("Error opening patient backup file");
+    } else {
+        // Count the number of patients in the linked list.
+        int count = 0;
+        Patient *current = head;
+        while (current != NULL) {
+            count++;
+            current = current->next;
+        }
+        // Write the count first.
+        if (fwrite(&count, sizeof(int), 1, patientBackupFile) != 1) {
+            perror("Error writing patient count to backup file");
+        }
+        // Now, write each patient's data (skipping the 'next' pointer).
+        current = head;
+        while (current != NULL) {
+            if (fwrite(&current->id, sizeof(int), 1, patientBackupFile) != 1 ||
+                fwrite(current->name, sizeof(char), sizeof(current->name), patientBackupFile) != sizeof(current->name) ||
+                fwrite(&current->age, sizeof(int), 1, patientBackupFile) != 1 ||
+                fwrite(current->diagnosis, sizeof(char), sizeof(current->diagnosis), patientBackupFile) != sizeof(current->diagnosis) ||
+                fwrite(&current->roomNumber, sizeof(int), 1, patientBackupFile) != 1) {
+                perror("Error writing patient data to backup file");
+                break;
+            }
+            current = current->next;
+        }
+        fflush(patientBackupFile);
+        printf("Patient backup created: %s\n", patientBackupFilename);
+        fclose(patientBackupFile);
+    }
+}
+
+// Backup thread function: sleeps for a fixed interval and then calls the backup routine.
+void *backupThreadFunction(void *arg) {
+    const int BACKUP_INTERVAL = 120; // backup every two minutes
+    while (1) {
+        sleep(BACKUP_INTERVAL);
+        backupRoutine();
+    }
+    return NULL;
 }
 
 int getValidInt(int minVal, int maxVal, const char *promptMsg) {

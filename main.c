@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <pthread.h>
 #include "hospital.h"
 #include "globals.h"
 #include "utils.h"
@@ -31,6 +31,15 @@ int main(void) {
 
     // Load patients data into the linked list.
     loadPatients();
+
+    // Create a backup thread that will periodically back up the schedule.
+    pthread_t backupThread;
+    if (pthread_create(&backupThread, NULL, backupThreadFunction, NULL) != 0) {
+        perror("Failed to create backup thread");
+        // Optionally continue without backups or exit.
+    }
+    // Detach the backup thread so it cleans up automatically.
+    pthread_detach(backupThread);
 
     menu();
 

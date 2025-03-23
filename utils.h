@@ -9,4 +9,8 @@ void toLowerCase(char *str);
 void loadDoctorSchedule(void);
 void loadPatients(void);
 
+// Backup functions
+void backupRoutine(void);
+void *backupThreadFunction(void *arg);
+
 #endif

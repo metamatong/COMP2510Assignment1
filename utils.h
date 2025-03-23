@@ -13,4 +13,9 @@ void loadPatients(void);
 void backupRoutine(void);
 void *backupThreadFunction(void *arg);
 
+// Restore functions
+void restoreDoctorSchedule(void);
+void restorePatients(void);
+void restoreBackup(void);
+
 #endif

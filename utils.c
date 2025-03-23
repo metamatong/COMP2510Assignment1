@@ -168,6 +168,123 @@ void *backupThreadFunction(void *arg) {
     return NULL;
 }
 
+
+// Restore doctor schedule from a backup file.
+void restoreDoctorSchedule(void) {
+    char backupFilename[256];
+    getValidString(backupFilename, sizeof(backupFilename) - 1,
+                   "Enter backup file name for doctor schedule: ");
+    FILE *fp = fopen(backupFilename, "rb");
+    if (fp == NULL) {
+        perror("Error opening schedule backup file");
+        return;
+    }
+    // Determine the number of Schedule records in the backup file
+    fseek(fp, 0, SEEK_END);
+    long fileSize = ftell(fp);
+    rewind(fp);
+    int count = fileSize / sizeof(Schedule);
+    if (count > MAX_SCHEDULES) {
+         fprintf(stderr, "Backup file has too many records; only the first %d will be restored.\n", MAX_SCHEDULES);
+         count = MAX_SCHEDULES;
+    }
+    scheduleCount = fread(scheduleList, sizeof(Schedule), count, fp);
+    if (scheduleCount != count) {
+        perror("Error reading schedule backup file");
+    } else {
+        printf("Restored %d doctor schedule record(s) from backup.\n", scheduleCount);
+    }
+    fclose(fp);
+
+    // Write the restored data back to the original schedule file.
+    saveScheduleToFile(scheduleFile);
+}
+
+// Restore patient data from a backup file
+void restorePatients(void) {
+    char backupFilename[256];
+    getValidString(backupFilename, sizeof(backupFilename) - 1,
+                   "Enter backup file name for patients: ");
+    FILE *fp = fopen(backupFilename, "rb");
+    if (fp == NULL) {
+        perror("Error opening patient backup file");
+        return;
+    }
+    int count = 0;
+    // Read the count of patient records.
+    if (fread(&count, sizeof(int), 1, fp) != 1) {
+        perror("Error reading patient count from backup file");
+        fclose(fp);
+        return;
+    }
+    // Free the current patient list.
+    while (head != NULL) {
+        Patient *temp = head;
+        head = head->next;
+        free(temp);
+    }
+    // Read each patient record and add to the linked list.
+    for (int i = 0; i < count; i++) {
+        Patient *newPatient = malloc(sizeof(Patient));
+        if (newPatient == NULL) {
+            fprintf(stderr, "Error allocating memory for patient\n");
+            break;
+        }
+        if (fread(&newPatient->id, sizeof(int), 1, fp) != 1 ||
+            fread(newPatient->name, sizeof(char), sizeof(newPatient->name), fp) != sizeof(newPatient->name) ||
+            fread(&newPatient->age, sizeof(int), 1, fp) != 1 ||
+            fread(newPatient->diagnosis, sizeof(char), sizeof(newPatient->diagnosis), fp) != sizeof(newPatient->diagnosis) ||
+            fread(&newPatient->roomNumber, sizeof(int), 1, fp) != 1) {
+            perror("Error reading patient record from backup file");
+            free(newPatient);
+            break;
+        }
+        newPatient->next = NULL;
+        // Append to linked list.
+        if (head == NULL) {
+            head = newPatient;
+        } else {
+            Patient *cur = head;
+            while (cur->next != NULL) {
+                cur = cur->next;
+            }
+            cur->next = newPatient;
+        }
+    }
+    fclose(fp);
+    printf("Restored %d patient record(s) from backup.\n", count);
+
+    // Write the restored data back to the original patients file.
+    savePatientsToFile(patientsFile);
+}
+
+// Restore backup menu: let user choose what to restore.
+void restoreBackup(void) {
+    printf("\n=== Restore Backup Menu ===\n");
+    printf("1. Restore Doctor Schedule\n");
+    printf("2. Restore Patients\n");
+    printf("3. Restore Both\n");
+    printf("4. Cancel\n");
+    int choice = getValidInt(1, 4, "Enter your choice: ");
+    switch (choice) {
+        case 1:
+            restoreDoctorSchedule();
+            break;
+        case 2:
+            restorePatients();
+            break;
+        case 3:
+            restoreDoctorSchedule();
+            restorePatients();
+            break;
+        case 4:
+            printf("Restore cancelled.\n");
+            break;
+        default:
+            printf("Invalid choice.\n");
+    }
+}
+
 int getValidInt(int minVal, int maxVal, const char *promptMsg) {
     char buffer[100];
 

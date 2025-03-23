@@ -15,9 +15,10 @@ void menu(void) {
         printf("3. Search Patient\n");
         printf("4. Discharge Patient\n");
         printf("5. Manage Doctor Schedule\n");
-        printf("6. Exit\n");
+        printf("6. Restore Backup\n");
+        printf("7. Exit\n");
 
-        choice = getValidInt(1, 6, "\nEnter your choice (1-6): \n");
+        choice = getValidInt(1, 7, "\nEnter your choice (1-7): \n");
 
         switch (choice) {
             case 1:
@@ -36,12 +37,18 @@ void menu(void) {
                 manageDoctSched();
             break;
             case 6:
-                while (head != NULL) {
-                    Patient *temp = head;
-                    head = head->next;
-                    free(temp);
-                }
-                return;
+                restoreBackup();
+            break;
+            case 7:
+                // Free patient list before exiting.
+                    while (head != NULL) {
+                        Patient *temp = head;
+                        head = head->next;
+                        free(temp);
+                    }
+            return;
+            default:
+                printf("Invalid choice! Please try again.\n");
         }
     }
 }

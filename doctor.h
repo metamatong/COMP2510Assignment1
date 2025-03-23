@@ -15,10 +15,10 @@ typedef struct {
     int shift;  // 0=Morning, 1=Afternoon, 2=Evening
 } Schedule;
 
-// prototypes for doctor-related functions
+// Prototypes for doctor-related functions
 void manageDoctSched(void);
 void assignDoctorShift(void);
 void viewWeeklySchedule(void);
-void saveSchedule(Schedule);
+void saveSchedule(FILE*);
 
 #endif

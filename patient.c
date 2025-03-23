@@ -2,10 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "patient.h"
+#include "globals.h"
 #include "utils.h"
-
-// Global head pointer for the linked list.
-Patient *head = NULL;
 
 // Global variable for generating unique IDs.
 int nextPatientID = 1;
@@ -37,7 +35,7 @@ void addPatient(void) {
         }
         current->next = newPatient;
     }
-
+    savePatientsToFile(patientsFile);
     printf("Patient added successfully! ID: %d\n", newPatient->id);
 }
 
@@ -156,4 +154,41 @@ void deletePatient(void) {
         current = current->next;
     }
     printf("Error: Patient with ID %d not found.\n", idToDelete);
+}
+
+void savePatientsToFile(FILE *file) {
+    // Overwrite entire file by moving the file pointer to the beginning.
+    rewind(file);
+
+    // First, count the number of patient records.
+    int count = 0;
+    Patient *current = head;
+    while (current != NULL) {
+        count++;
+        current = current->next;
+    }
+
+    // Write the count to the file.
+    if (fwrite(&count, sizeof(int), 1, file) != 1) {
+        perror("Error writing patient count to file");
+        return;
+    }
+
+    // Iterate through the linked list and write each patient's data.
+    current = head;
+    while (current != NULL) {
+        // Write each field one by one, skipping the "next" pointer.
+        if (fwrite(&(current->id), sizeof(int), 1, file) != 1 ||
+            fwrite(current->name, sizeof(char), sizeof(current->name), file) != sizeof(current->name) ||
+            fwrite(&(current->age), sizeof(int), 1, file) != 1 ||
+            fwrite(current->diagnosis, sizeof(char), sizeof(current->diagnosis), file) != sizeof(current->diagnosis) ||
+            fwrite(&(current->roomNumber), sizeof(int), 1, file) != 1) {
+            perror("Error writing patient data to file");
+            return;
+            }
+
+        current = current->next;
+    }
+    fflush(file);
+    printf("Patients saved successfully.\n");
 }

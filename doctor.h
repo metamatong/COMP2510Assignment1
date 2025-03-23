@@ -19,6 +19,6 @@ typedef struct {
 void manageDoctSched(void);
 void assignDoctorShift(void);
 void viewWeeklySchedule(void);
-void saveSchedule(FILE*);
+void saveScheduleToFile(FILE*);
 
 #endif

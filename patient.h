@@ -1,7 +1,7 @@
 #ifndef PATIENT_H
 #define PATIENT_H
 
-typedef struct {
+typedef struct Patient {
     int id;
     char name[100];
     int age;
@@ -20,6 +20,6 @@ void searchPatient(void);
 void deletePatient(void);
 void searchPatientByName(void);
 void searchPatientByID(void);
-
+void savePatientsToFile(FILE*);
 
 #endif

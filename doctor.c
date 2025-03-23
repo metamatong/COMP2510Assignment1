@@ -79,7 +79,7 @@ void assignDoctorShift(void) {
             }
 
             // Write the doctor schedule data to the file so that we can "save".
-            saveSchedule(scheduleFile);
+            saveScheduleToFile(scheduleFile);
 
             printf("Doctor '%s' assigned to %s (%s) successfully!\n",
                    docName, DAY_NAMES[day], SHIFT_NAMES[shift]);
@@ -133,7 +133,7 @@ void viewWeeklySchedule(void) {
     }
 }
 
-void saveSchedule(FILE *file) {
+void saveScheduleToFile(FILE *file) {
     // Overwrite entire file by moving the file pointer to the beginning.
     rewind(file);
 
@@ -143,4 +143,5 @@ void saveSchedule(FILE *file) {
         perror("Error writing schedule list to file. Check if the file is open");
     }
     fflush(file);
+    printf("Doctor schedules saved successfully.\n");
 }

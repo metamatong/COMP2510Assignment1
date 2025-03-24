@@ -13,6 +13,7 @@ typedef struct Patient {
 } Patient;
 
 extern Patient *head;
+extern Patient *dischargedHead;
 
 // Prototypes for patient functions
 int  generatePatientID(void);

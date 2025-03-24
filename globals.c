@@ -8,3 +8,4 @@ int scheduleCount = 0;
 // Definitions for doctor file
 FILE *patientsFile = NULL;
 Patient *head = NULL;
+Patient *dischargedHead = NULL;

@@ -155,40 +155,45 @@ void searchPatient(void) {
 }
 
 void deletePatient(void) {
-    int idToDelete = getValidInt(1, 9999, "Enter Patient ID to delete: ");
+    int idToDelete = getValidInt(1, 9999, "Enter Patient ID to discharge: ");
     if (head == NULL) {
-        printf("No patients to delete.\n");
-        return;
-    }
-
-    if (head->id == idToDelete) {
-
-        time_t now = time(NULL);
-        struct tm *tm_info = localtime(&now);
-        strftime(head->dischargeDate, sizeof(head->dischargeDate),
-                 "%Y-%m-%d %H:%M:%S", tm_info);
-
-        Patient *temp = head;
-        head = head->next;
-        free(temp);
-        printf("Patient with ID %d deleted successfully.\n", idToDelete);
+        printf("No patients to discharge.\n");
         return;
     }
 
     Patient *current = head;
     Patient *prev = NULL;
 
+    // Handle if the first node is to be discharged
+    if (current != NULL && current->id == idToDelete) {
+        time_t now = time(NULL);
+        struct tm *tm_info = localtime(&now);
+        strftime(current->dischargeDate, sizeof(current->dischargeDate),
+                 "%Y-%m-%d %H:%M:%S", tm_info);
+
+        head = current->next;
+        current->next = dischargedHead;
+        dischargedHead = current;
+
+        printf("Patient with ID %d discharged successfully.\n", idToDelete);
+        return;
+    }
+
+    // Search for the patient in the active list
     while (current != NULL) {
         if (current->id == idToDelete) {
-
             time_t now = time(NULL);
             struct tm *tm_info = localtime(&now);
             strftime(current->dischargeDate, sizeof(current->dischargeDate),
                      "%Y-%m-%d %H:%M:%S", tm_info);
 
+            // Remove from active list
             prev->next = current->next;
-            free(current);
-            printf("Patient with ID %d deleted successfully.\n", idToDelete);
+            // Add to discharged list at the beginning
+            current->next = dischargedHead;
+            dischargedHead = current;
+
+            printf("Patient with ID %d discharged successfully.\n", idToDelete);
             return;
         }
         prev = current;

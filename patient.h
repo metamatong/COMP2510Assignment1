@@ -7,6 +7,8 @@ typedef struct Patient {
     int age;
     char diagnosis[200];
     int roomNumber;
+    char admissionDate[20];
+    char dischargeDate[20];
     struct Patient *next;
 } Patient;
 

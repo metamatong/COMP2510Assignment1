@@ -13,4 +13,6 @@ add_executable(COMP2510Assignment1 main.c
         utils.h
         utils.c
         globals.h
-        globals.c)
+        globals.c
+        report.c
+        report.h)

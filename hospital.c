@@ -4,6 +4,7 @@
 #include "patient.h"
 #include "doctor.h"
 #include "utils.h"
+#include "report.h"
 
 void menu(void) {
 
@@ -16,9 +17,10 @@ void menu(void) {
         printf("4. Discharge Patient\n");
         printf("5. Manage Doctor Schedule\n");
         printf("6. Restore Backup\n");
-        printf("7. Exit\n");
+        printf("7. Reporting & Analytics\n");
+        printf("8. Exit\n");
 
-        choice = getValidInt(1, 7, "\nEnter your choice (1-7): \n");
+        choice = getValidInt(1, 8, "\nEnter your choice (1-8): \n");
 
         switch (choice) {
             case 1:
@@ -40,7 +42,9 @@ void menu(void) {
                 restoreBackup();
             break;
             case 7:
-                // Free patient list before exiting.
+                reportingMenu();
+            break;
+            case 8:
                     while (head != NULL) {
                         Patient *temp = head;
                         head = head->next;

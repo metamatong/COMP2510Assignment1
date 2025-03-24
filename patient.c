@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "patient.h"
+
+#include <time.h>
+
 #include "globals.h"
 #include "utils.h"
 
@@ -20,6 +23,13 @@ void addPatient(void) {
     }
     newPatient->id = generatePatientID();
     newPatient->next = NULL;
+
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+    strftime(newPatient->admissionDate, sizeof(newPatient->admissionDate),
+             "%Y-%m-%d %H:%M:%S", tm_info);
+
+    newPatient->dischargeDate[0] = '\0';
 
     getValidString(newPatient->name, 99, "Enter patient name: \n");
     newPatient->age = getValidInt(0, 200, "Enter patient age (0-200): \n");
@@ -52,6 +62,12 @@ void displayPatient(void) {
         printf("Patient Age: %d\n", current->age);
         printf("Patient Diagnosis: %s\n", current->diagnosis);
         printf("Patient Room No.: %d\n", current->roomNumber);
+        printf("Admission Date: %s\n", current->admissionDate);
+        if (strlen(current->dischargeDate) == 0) {
+            printf("Discharge Date: N/A\n");
+        } else {
+            printf("Discharge Date: %s\n", current->dischargeDate);
+        }
         current = current->next;
     }
 }
@@ -69,7 +85,13 @@ void searchPatientByID(void) {
             printf("Patient Name: %s\n", current->name);
             printf("Patient Age: %d\n", current->age);
             printf("Patient Diagnosis: %s\n", current->diagnosis);
-            printf("Patient Room No.: %d\n\n", current->roomNumber);
+            printf("Patient Room No.: %d\n", current->roomNumber);
+            printf("Admission Date: %s\n", current->admissionDate);
+            if (strlen(current->dischargeDate) == 0) {
+                printf("Discharge Date: N/A\n\n");
+            } else {
+                printf("Discharge Date: %s\n\n", current->dischargeDate);
+            }
             return;
         }
         current = current->next;
@@ -99,7 +121,13 @@ void searchPatientByName(void) {
             printf("Patient Name: %s\n", current->name);
             printf("Patient Age: %d\n", current->age);
             printf("Patient Diagnosis: %s\n", current->diagnosis);
-            printf("Patient Room No.: %d\n\n", current->roomNumber);
+            printf("Patient Room No.: %d\n", current->roomNumber);
+            printf("Admission Date: %s\n", current->admissionDate);
+            if (strlen(current->dischargeDate) == 0) {
+                printf("Discharge Date: N/A\n\n");
+            } else {
+                printf("Discharge Date: %s\n\n", current->dischargeDate);
+            }
             return;
         }
         current = current->next;
@@ -134,6 +162,12 @@ void deletePatient(void) {
     }
 
     if (head->id == idToDelete) {
+
+        time_t now = time(NULL);
+        struct tm *tm_info = localtime(&now);
+        strftime(head->dischargeDate, sizeof(head->dischargeDate),
+                 "%Y-%m-%d %H:%M:%S", tm_info);
+
         Patient *temp = head;
         head = head->next;
         free(temp);
@@ -143,8 +177,15 @@ void deletePatient(void) {
 
     Patient *current = head;
     Patient *prev = NULL;
+
     while (current != NULL) {
         if (current->id == idToDelete) {
+
+            time_t now = time(NULL);
+            struct tm *tm_info = localtime(&now);
+            strftime(current->dischargeDate, sizeof(current->dischargeDate),
+                     "%Y-%m-%d %H:%M:%S", tm_info);
+
             prev->next = current->next;
             free(current);
             printf("Patient with ID %d deleted successfully.\n", idToDelete);
@@ -178,11 +219,13 @@ void savePatientsToFile(FILE *file) {
     current = head;
     while (current != NULL) {
         // Write each field one by one, skipping the "next" pointer.
-        if (fwrite(&(current->id), sizeof(int), 1, file) != 1 ||
+        if (fwrite(&current->id, sizeof(int), 1, file) != 1 ||
             fwrite(current->name, sizeof(char), sizeof(current->name), file) != sizeof(current->name) ||
-            fwrite(&(current->age), sizeof(int), 1, file) != 1 ||
+            fwrite(&current->age, sizeof(int), 1, file) != 1 ||
             fwrite(current->diagnosis, sizeof(char), sizeof(current->diagnosis), file) != sizeof(current->diagnosis) ||
-            fwrite(&(current->roomNumber), sizeof(int), 1, file) != 1) {
+            fwrite(&current->roomNumber, sizeof(int), 1, file) != 1 ||
+            fwrite(current->admissionDate, sizeof(char), sizeof(current->admissionDate), file) != sizeof(current->admissionDate) ||
+            fwrite(current->dischargeDate, sizeof(char), sizeof(current->dischargeDate), file) != sizeof(current->dischargeDate)) {
             perror("Error writing patient data to file");
             return;
             }

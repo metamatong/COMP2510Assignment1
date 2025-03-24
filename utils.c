@@ -58,10 +58,12 @@ void loadPatients(void) {
             fread(temp.name, sizeof(char), sizeof(temp.name), patientsFile) != sizeof(temp.name) ||
             fread(&temp.age, sizeof(int), 1, patientsFile) != 1 ||
             fread(temp.diagnosis, sizeof(char), sizeof(temp.diagnosis), patientsFile) != sizeof(temp.diagnosis) ||
-            fread(&temp.roomNumber, sizeof(int), 1, patientsFile) != 1) {
+            fread(&temp.roomNumber, sizeof(int), 1, patientsFile) != 1 ||
+            fread(temp.admissionDate, sizeof(char), sizeof(temp.admissionDate), patientsFile) != sizeof(temp.admissionDate) ||
+            fread(temp.dischargeDate, sizeof(char), sizeof(temp.dischargeDate), patientsFile) != sizeof(temp.dischargeDate)) {
             perror("Error reading patient data from file");
             break;
-        }
+            }
 
         // Allocate a new Patient node.
         Patient *newPatient = malloc(sizeof(Patient));
@@ -71,10 +73,12 @@ void loadPatients(void) {
         }
         // Copy the fields from temp into the new node.
         newPatient->id = temp.id;
-        strncpy(newPatient->name, temp.name, sizeof(newPatient->name));
+        strcpy(newPatient->name, temp.name);
         newPatient->age = temp.age;
-        strncpy(newPatient->diagnosis, temp.diagnosis, sizeof(newPatient->diagnosis));
+        strcpy(newPatient->diagnosis, temp.diagnosis);
         newPatient->roomNumber = temp.roomNumber;
+        strcpy(newPatient->admissionDate, temp.admissionDate);
+        strcpy(newPatient->dischargeDate, temp.dischargeDate);
         newPatient->next = NULL;
 
         // Append newPatient to the linked list.
@@ -143,10 +147,12 @@ void backupRoutine(void) {
         current = head;
         while (current != NULL) {
             if (fwrite(&current->id, sizeof(int), 1, patientBackupFile) != 1 ||
-                fwrite(current->name, sizeof(char), sizeof(current->name), patientBackupFile) != sizeof(current->name) ||
-                fwrite(&current->age, sizeof(int), 1, patientBackupFile) != 1 ||
-                fwrite(current->diagnosis, sizeof(char), sizeof(current->diagnosis), patientBackupFile) != sizeof(current->diagnosis) ||
-                fwrite(&current->roomNumber, sizeof(int), 1, patientBackupFile) != 1) {
+            fwrite(current->name, sizeof(char), sizeof(current->name), patientBackupFile) != sizeof(current->name) ||
+            fwrite(&current->age, sizeof(int), 1, patientBackupFile) != 1 ||
+            fwrite(current->diagnosis, sizeof(char), sizeof(current->diagnosis), patientBackupFile) != sizeof(current->diagnosis) ||
+            fwrite(&current->roomNumber, sizeof(int), 1, patientBackupFile) != 1 ||
+            fwrite(current->admissionDate, sizeof(char), sizeof(current->admissionDate), patientBackupFile) != sizeof(current->admissionDate) ||
+            fwrite(current->dischargeDate, sizeof(char), sizeof(current->dischargeDate), patientBackupFile) != sizeof(current->dischargeDate)) {
                 perror("Error writing patient data to backup file");
                 break;
             }
@@ -234,11 +240,13 @@ void restorePatients(void) {
             fread(newPatient->name, sizeof(char), sizeof(newPatient->name), fp) != sizeof(newPatient->name) ||
             fread(&newPatient->age, sizeof(int), 1, fp) != 1 ||
             fread(newPatient->diagnosis, sizeof(char), sizeof(newPatient->diagnosis), fp) != sizeof(newPatient->diagnosis) ||
-            fread(&newPatient->roomNumber, sizeof(int), 1, fp) != 1) {
+            fread(&newPatient->roomNumber, sizeof(int), 1, fp) != 1 ||
+            fread(newPatient->admissionDate, sizeof(char), sizeof(newPatient->admissionDate), fp) != sizeof(newPatient->admissionDate) ||
+            fread(newPatient->dischargeDate, sizeof(char), sizeof(newPatient->dischargeDate), fp) != sizeof(newPatient->dischargeDate)) {
             perror("Error reading patient record from backup file");
             free(newPatient);
             break;
-        }
+            }
         newPatient->next = NULL;
         // Append to linked list.
         if (head == NULL) {

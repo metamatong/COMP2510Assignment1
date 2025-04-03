@@ -5,6 +5,9 @@
 #include "doctor.h"
 #include "utils.h"
 #include "report.h"
+
+#include <time.h>
+
 #include "hospital.h"
 
 /**
@@ -30,6 +33,9 @@ void generatePatientSummaryReport(void) {
         current = current->next;
     }
 
+    int dayCount, weekCount, monthCount;
+    countAdmissionPeriods(&dayCount, &weekCount, &monthCount);
+
     fprintf(fp, "Patient Summary Report\n");
     fprintf(fp, "----------------------\n");
     fprintf(fp, "Active patients: %d\n", activeCount);
@@ -54,9 +60,82 @@ void generatePatientSummaryReport(void) {
         current = current->next;
     }
 
+    fprintf(fp, "Admissions in the Last Time Periods:\n");
+    fprintf(fp, "------------------------------------\n");
+    fprintf(fp, "Last 24 hours: %d\n", dayCount);
+    fprintf(fp, "Last 7 days:   %d\n", weekCount);
+    fprintf(fp, "Last 30 days:  %d\n", monthCount);
+
     fclose(fp);
     printf("Patient summary report generated: 'patient_summary_report.txt'\n");
 }
+
+/**
+ * updateCountsForPatient
+ *
+ * Helper function that updates the admission counters for a given patient.
+ *
+ * @param p Pointer to a Patient structure.
+ * @param now The current time (as time_t).
+ * @param dayCount Pointer to the counter for the last 24 hours.
+ * @param weekCount Pointer to the counter for the last 7 days.
+ * @param monthCount Pointer to the counter for the last 30 days.
+ */
+void updateCountsForPatient(Patient *p, time_t now, int *dayCount, int *weekCount, int *monthCount) {
+    int year, month, day;
+    if (sscanf(p->admissionDate, "%d-%d-%d", &year, &month, &day) == 3) {
+        struct tm admission_tm = {0};
+        admission_tm.tm_year = year - 1900;
+        admission_tm.tm_mon  = month - 1;
+        admission_tm.tm_mday = day;
+        admission_tm.tm_hour = 0;
+        admission_tm.tm_min  = 0;
+        admission_tm.tm_sec  = 0;
+        admission_tm.tm_isdst = -1;
+        time_t admission_time = mktime(&admission_tm);
+        if (admission_time != -1) {
+            double diff = difftime(now, admission_time);
+            if (diff <= SECONDS_IN_DAY)
+                (*dayCount)++;
+            if (diff <= SECONDS_IN_WEEK)
+                (*weekCount)++;
+            if (diff <= SECONDS_IN_MONTH)
+                (*monthCount)++;
+        }
+    }
+}
+
+/**
+ * countAdmissionPeriods
+ *
+ * Counts the number of patients admitted within the last day, week, and month.
+ * It processes both active patients (from 'head') and discharged patients (from 'dischargedHead').
+ *
+ * @param dayCount Pointer to an integer where the count for the last 24 hours will be stored.
+ * @param weekCount Pointer to an integer where the count for the last 7 days will be stored.
+ * @param monthCount Pointer to an integer where the count for the last 30 days will be stored.
+ */
+void countAdmissionPeriods(int *dayCount, int *weekCount, int *monthCount) {
+    *dayCount = 0;
+    *weekCount = 0;
+    *monthCount = 0;
+    time_t now = time(nullptr);
+
+    // Process active patients.
+    Patient *current = head;
+    while (current != NULL) {
+        updateCountsForPatient(current, now, dayCount, weekCount, monthCount);
+        current = current->next;
+    }
+
+    // Process discharged patients.
+    current = dischargedHead;
+    while (current != NULL) {
+        updateCountsForPatient(current, now, dayCount, weekCount, monthCount);
+        current = current->next;
+    }
+}
+
 
 /**
  * Generates a text file showing how many shifts each doctor covers in a week.

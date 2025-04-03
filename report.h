@@ -2,7 +2,7 @@
 #define REPORT_H
 
 void generatePatientSummaryReport(void);
-void updateCountsForPatient(Patient *p, time_t now, int *dayCount, int *weekCount, int *monthCount);
+void updateCountsForPatient(PatientNode *p, time_t now, int *dayCount, int *weekCount, int *monthCount);
 void countAdmissionPeriods(int *dayCount, int *weekCount, int *monthCount);
 void generateDoctorUtilizationReport(void);
 void generateRoomUsageReport(void);

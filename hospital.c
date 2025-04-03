@@ -3,6 +3,7 @@
 #include "hospital.h"
 #include "patient.h"
 #include "doctor.h"
+#include "globals.h"
 #include "utils.h"
 #include "report.h"
 
@@ -45,11 +46,12 @@ void menu(void) {
                 reportingMenu();
             break;
             case 8:
-                    while (head != NULL) {
-                        Patient *temp = head;
-                        head = head->next;
-                        free(temp);
-                    }
+                while (head != NULL) {
+                    PatientNode *temp = head;
+                    head = head->next;
+                    free(temp->patient);
+                    free(temp);
+                }
             return;
             default:
                 printf("Invalid choice! Please try again.\n");

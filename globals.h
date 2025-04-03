@@ -12,7 +12,7 @@ extern FILE *patientsFile; // Global file pointer for patient file
 extern Schedule scheduleList[MAX_SCHEDULES];
 extern int scheduleCount;
 
-extern Patient *head;
-
+extern PatientNode *head;
+extern PatientNode *dischargedHead;
 
 #endif

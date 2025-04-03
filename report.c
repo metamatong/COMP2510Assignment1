@@ -1,13 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "globals.h"
 #include "patient.h"
 #include "doctor.h"
 #include "utils.h"
 #include "report.h"
-
-#include <time.h>
-
 #include "hospital.h"
 
 /**
@@ -22,7 +21,7 @@ void generatePatientSummaryReport(void) {
     }
 
     int activeCount = 0, dischargedCount = 0;
-    Patient *current = head;
+    PatientNode *current = head;
     while (current != NULL) {
         activeCount++;
         current = current->next;
@@ -45,8 +44,9 @@ void generatePatientSummaryReport(void) {
     fprintf(fp, "List of Active Patients:\n");
     current = head;
     while (current != NULL) {
-        fprintf(fp, "ID: %d, Name: %s, Room: %d\n", current->id, current->name, current->roomNumber);
-        fprintf(fp, "Admission Date: %s\n", current->admissionDate);
+        Patient *p = current->patient;
+        fprintf(fp, "ID: %d, Name: %s, Room: %d\n", p->id, p->name, p->roomNumber);
+        fprintf(fp, "Admission Date: %s\n", p->admissionDate);
         fprintf(fp, "Discharge Date: N/A\n\n");
         current = current->next;
     }
@@ -54,9 +54,10 @@ void generatePatientSummaryReport(void) {
     fprintf(fp, "List of Discharged Patients:\n");
     current = dischargedHead;
     while (current != NULL) {
-        fprintf(fp, "ID: %d, Name: %s, Room: %d\n", current->id, current->name, current->roomNumber);
-        fprintf(fp, "Admission Date: %s\n", current->admissionDate);
-        fprintf(fp, "Discharge Date: %s\n\n", current->dischargeDate);
+        Patient *p = current->patient;
+        fprintf(fp, "ID: %d, Name: %s, Room: %d\n", p->id, p->name, p->roomNumber);
+        fprintf(fp, "Admission Date: %s\n", p->admissionDate);
+        fprintf(fp, "Discharge Date: %s\n\n", p->dischargeDate);
         current = current->next;
     }
 
@@ -75,15 +76,15 @@ void generatePatientSummaryReport(void) {
  *
  * Helper function that updates the admission counters for a given patient.
  *
- * @param p Pointer to a Patient structure.
+ * @param p Pointer to a PatientNode structure.
  * @param now The current time (as time_t).
  * @param dayCount Pointer to the counter for the last 24 hours.
  * @param weekCount Pointer to the counter for the last 7 days.
  * @param monthCount Pointer to the counter for the last 30 days.
  */
-void updateCountsForPatient(Patient *p, time_t now, int *dayCount, int *weekCount, int *monthCount) {
+void updateCountsForPatient(PatientNode *p, time_t now, int *dayCount, int *weekCount, int *monthCount) {
     int year, month, day;
-    if (sscanf(p->admissionDate, "%d-%d-%d", &year, &month, &day) == 3) {
+    if (sscanf(p->patient->admissionDate, "%d-%d-%d", &year, &month, &day) == 3) {
         struct tm admission_tm = {0};
         admission_tm.tm_year = year - 1900;
         admission_tm.tm_mon  = month - 1;
@@ -119,10 +120,10 @@ void countAdmissionPeriods(int *dayCount, int *weekCount, int *monthCount) {
     *dayCount = 0;
     *weekCount = 0;
     *monthCount = 0;
-    time_t now = time(nullptr);
+    time_t now = time(NULL);
 
     // Process active patients.
-    Patient *current = head;
+    PatientNode *current = head;
     while (current != NULL) {
         updateCountsForPatient(current, now, dayCount, weekCount, monthCount);
         current = current->next;
@@ -136,7 +137,6 @@ void countAdmissionPeriods(int *dayCount, int *weekCount, int *monthCount) {
     }
 }
 
-
 /**
  * Generates a text file showing how many shifts each doctor covers in a week.
  * Uses your global 'scheduleList' array and 'scheduleCount' to see who is assigned.
@@ -148,8 +148,7 @@ void generateDoctorUtilizationReport(void) {
         return;
     }
 
-    // We’ll keep a simple tally in memory.
-    // For a bigger system, you might use a dynamic structure or a map.
+    // We'll keep a simple tally in memory.
     // Let's assume at most 100 different doctor names for demonstration.
     char uniqueDocs[100][MAX_DOC_NAME];
     int docShiftCount[100];
@@ -164,8 +163,6 @@ void generateDoctorUtilizationReport(void) {
     // Loop over the schedule and count shifts per doctor
     for (int i = 0; i < scheduleCount; i++) {
         char *docName = scheduleList[i].docName;
-
-        // Check if docName is already in uniqueDocs
         int foundIndex = -1;
         for (int k = 0; k < uniqueCount; k++) {
             if (strcmp(uniqueDocs[k], docName) == 0) {
@@ -174,7 +171,6 @@ void generateDoctorUtilizationReport(void) {
             }
         }
         if (foundIndex == -1 && uniqueCount < 100) {
-            // new doctor
             strncpy(uniqueDocs[uniqueCount], docName, MAX_DOC_NAME);
             docShiftCount[uniqueCount] = 1;
             uniqueCount++;
@@ -205,19 +201,18 @@ void generateRoomUsageReport(void) {
         return;
     }
 
-    // If roomNumber can be up to 9999, you could do an array of size 10000,
-    // or you could use a dynamic data structure. For simplicity, let's do a
-    // smaller array and assume room numbers < 1000. Adjust as needed.
+    // For simplicity, assume room numbers are < 1000.
     const int MAX_ROOMS = 1000;
     int roomUsage[MAX_ROOMS];
     for (int i = 0; i < MAX_ROOMS; i++) {
         roomUsage[i] = 0;
     }
 
-    Patient *current = head;
+    PatientNode *current = head;
     while (current != NULL) {
-        if (current->roomNumber >= 0 && current->roomNumber < MAX_ROOMS) {
-            roomUsage[current->roomNumber]++;
+        int room = current->patient->roomNumber;
+        if (room >= 0 && room < MAX_ROOMS) {
+            roomUsage[room]++;
         }
         current = current->next;
     }
@@ -235,7 +230,9 @@ void generateRoomUsageReport(void) {
 }
 
 /**
- * A simple menu for generating different reports.
+ * reportingMenu
+ *
+ * Provides a simple menu for generating different reports.
  * Integrate it into your main menu or call it from 'menu()' in hospital.c.
  */
 void reportingMenu(void) {
@@ -247,7 +244,6 @@ void reportingMenu(void) {
         printf("4. Return to Main Menu\n");
 
         int choice = getValidInt(1, 4, "Enter your choice: ");
-
         switch (choice) {
             case 1:
                 generatePatientSummaryReport();
@@ -260,7 +256,9 @@ void reportingMenu(void) {
                 break;
             case 4:
                 menu();
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
         }
     }
-
 }

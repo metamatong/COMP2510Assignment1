@@ -9,11 +9,13 @@ typedef struct Patient {
     int roomNumber;
     char admissionDate[20];
     char dischargeDate[20];
-    struct Patient *next;
 } Patient;
 
-extern Patient *head;
-extern Patient *dischargedHead;
+/* New structure for linking patients in a list */
+typedef struct PatientNode {
+    Patient *patient;
+    struct PatientNode *next;
+} PatientNode;
 
 // Prototypes for patient functions
 int  generatePatientID(void);
@@ -24,5 +26,6 @@ void deletePatient(void);
 void searchPatientByName(void);
 void searchPatientByID(void);
 void savePatientsToFile(FILE*);
+void freeAllPatients(void);  // Function to free all allocated memory
 
 #endif

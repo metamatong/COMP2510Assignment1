@@ -35,7 +35,6 @@ void loadDoctorSchedule(void) {
     }
 }
 
-
 /**
  * loadPatients
  *
@@ -43,6 +42,17 @@ void loadDoctorSchedule(void) {
  * into the active patients list (using the new Patient/PatientNode structure).
  */
 void loadPatients(void) {
+
+    fseek(patientsFile, 0, SEEK_END);
+    long fileSize = ftell(patientsFile);
+    rewind(patientsFile);
+
+    if (fileSize == 0) {
+        // No patients to load
+        printf("No patients found in the file.\n");
+        return;
+    }
+
     int count;
     if (fread(&count, sizeof(int), 1, patientsFile) != 1) {
         perror("Error reading patient count");

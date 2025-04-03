@@ -62,7 +62,6 @@ void addPatient(void) {
     /* Save active patients to file (patientsFile is assumed to be defined in globals) */
     savePatientsToFile(patientsFile);
     printf("Patient added successfully! ID: %d\n", newPatient->id);
-    free(newPatient);
 }
 
 /**

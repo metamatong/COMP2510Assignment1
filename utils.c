@@ -148,7 +148,7 @@ void backupRoutine(void) {
 
 // Backup thread function: sleeps for a fixed interval and then calls the backup routine.
 void *backupThreadFunction(void *arg) {
-    const int BACKUP_INTERVAL = 120; // backup every two minutes
+    const int BACKUP_INTERVAL = 20; // backup every two minutes
     while (1) {
         sleep(BACKUP_INTERVAL);
         backupRoutine();

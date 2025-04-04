@@ -1,5 +1,6 @@
 #ifndef REPORT_H
 #define REPORT_H
+#include <time.h>
 
 void generatePatientSummaryReport(void);
 void updateCountsForPatient(PatientNode *p, time_t now, int *dayCount, int *weekCount, int *monthCount);

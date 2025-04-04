@@ -272,13 +272,7 @@ void savePatientsToFile(FILE *file) {
     current = head;
     while (current != NULL) {
         Patient *p = current->patient;
-        if (fwrite(&p->id, sizeof(int), 1, file) != 1 ||
-            fwrite(p->name, sizeof(char), sizeof(p->name), file) != sizeof(p->name) ||
-            fwrite(&p->age, sizeof(int), 1, file) != 1 ||
-            fwrite(p->diagnosis, sizeof(char), sizeof(p->diagnosis), file) != sizeof(p->diagnosis) ||
-            fwrite(&p->roomNumber, sizeof(int), 1, file) != 1 ||
-            fwrite(p->admissionDate, sizeof(char), sizeof(p->admissionDate), file) != sizeof(p->admissionDate) ||
-            fwrite(p->dischargeDate, sizeof(char), sizeof(p->dischargeDate), file) != sizeof(p->dischargeDate)) {
+        if (!writePatientToFile(file, p)) {
             perror("Error writing patient data to file");
             return;
         }

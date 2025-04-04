@@ -3,12 +3,35 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <time.h>
 #include <unistd.h>
 #include "utils.h"
 #include "globals.h"
 #include "doctor.h"
 #include "patient.h"
+
+// Helper to read a Patient record from a file.
+int readPatientFromFile(FILE *fp, Patient *p) {
+    if (fread(&p->id, sizeof(int), 1, fp) != 1) return 0;
+    if (fread(p->name, sizeof(char), sizeof(p->name), fp) != sizeof(p->name)) return 0;
+    if (fread(&p->age, sizeof(int), 1, fp) != 1) return 0;
+    if (fread(p->diagnosis, sizeof(char), sizeof(p->diagnosis), fp) != sizeof(p->diagnosis)) return 0;
+    if (fread(&p->roomNumber, sizeof(int), 1, fp) != 1) return 0;
+    if (fread(p->admissionDate, sizeof(char), sizeof(p->admissionDate), fp) != sizeof(p->admissionDate)) return 0;
+    if (fread(p->dischargeDate, sizeof(char), sizeof(p->dischargeDate), fp) != sizeof(p->dischargeDate)) return 0;
+    return 1;
+}
+
+// Helper to write a Patient record to a file.
+int writePatientToFile(FILE *fp, const Patient *p) {
+    if (fwrite(&p->id, sizeof(int), 1, fp) != 1) return 0;
+    if (fwrite(p->name, sizeof(char), sizeof(p->name), fp) != sizeof(p->name)) return 0;
+    if (fwrite(&p->age, sizeof(int), 1, fp) != 1) return 0;
+    if (fwrite(p->diagnosis, sizeof(char), sizeof(p->diagnosis), fp) != sizeof(p->diagnosis)) return 0;
+    if (fwrite(&p->roomNumber, sizeof(int), 1, fp) != 1) return 0;
+    if (fwrite(p->admissionDate, sizeof(char), sizeof(p->admissionDate), fp) != sizeof(p->admissionDate)) return 0;
+    if (fwrite(p->dischargeDate, sizeof(char), sizeof(p->dischargeDate), fp) != sizeof(p->dischargeDate)) return 0;
+    return 1;
+}
 
 void loadDoctorSchedule(void) {
     if (scheduleFile == NULL) {
@@ -58,24 +81,20 @@ void loadPatients(void) {
         perror("Error reading patient count");
         return;
     }
+
     for (int i = 0; i < count; i++) {
         Patient temp;
-        if (fread(&temp.id, sizeof(int), 1, patientsFile) != 1 ||
-            fread(temp.name, sizeof(char), sizeof(temp.name), patientsFile) != sizeof(temp.name) ||
-            fread(&temp.age, sizeof(int), 1, patientsFile) != 1 ||
-            fread(temp.diagnosis, sizeof(char), sizeof(temp.diagnosis), patientsFile) != sizeof(temp.diagnosis) ||
-            fread(&temp.roomNumber, sizeof(int), 1, patientsFile) != 1 ||
-            fread(temp.admissionDate, sizeof(char), sizeof(temp.admissionDate), patientsFile) != sizeof(temp.admissionDate) ||
-            fread(temp.dischargeDate, sizeof(char), sizeof(temp.dischargeDate), patientsFile) != sizeof(temp.dischargeDate)) {
+        if (!readPatientFromFile(patientsFile, &temp)) {
             perror("Error reading patient data");
             return;
-            }
+        }
+
         Patient *newPatient = malloc(sizeof(Patient));
         if (newPatient == NULL) {
             perror("Error allocating memory for loaded patient");
             exit(1);
         }
-        *newPatient = temp;  // Copy data into new allocated Patient
+        *newPatient = temp;
 
         PatientNode *newNode = malloc(sizeof(PatientNode));
         if (newNode == NULL) {
@@ -116,17 +135,11 @@ void backupRoutine(void) {
     current = head;
     while (current != NULL) {
         Patient *p = current->patient;
-        if (fwrite(&p->id, sizeof(int), 1, patientBackupFile) != 1 ||
-            fwrite(p->name, sizeof(char), sizeof(p->name), patientBackupFile) != sizeof(p->name) ||
-            fwrite(&p->age, sizeof(int), 1, patientBackupFile) != 1 ||
-            fwrite(p->diagnosis, sizeof(char), sizeof(p->diagnosis), patientBackupFile) != sizeof(p->diagnosis) ||
-            fwrite(&p->roomNumber, sizeof(int), 1, patientBackupFile) != 1 ||
-            fwrite(p->admissionDate, sizeof(char), sizeof(p->admissionDate), patientBackupFile) != sizeof(p->admissionDate) ||
-            fwrite(p->dischargeDate, sizeof(char), sizeof(p->dischargeDate), patientBackupFile) != sizeof(p->dischargeDate)) {
+        if (!writePatientToFile(patientBackupFile, p)) {
             perror("Error writing patient data to backup file");
             fclose(patientBackupFile);
             return;
-            }
+        }
         current = current->next;
     }
     fclose(patientBackupFile);
@@ -192,26 +205,20 @@ void restorePatients(void) {
         fclose(fp);
         return;
     }
-    // (Optionally free existing patients before restoring)
     for (int i = 0; i < count; i++) {
         Patient temp;
-        if (fread(&temp.id, sizeof(int), 1, fp) != 1 ||
-            fread(temp.name, sizeof(char), sizeof(temp.name), fp) != sizeof(temp.name) ||
-            fread(&temp.age, sizeof(int), 1, fp) != 1 ||
-            fread(temp.diagnosis, sizeof(char), sizeof(temp.diagnosis), fp) != sizeof(temp.diagnosis) ||
-            fread(&temp.roomNumber, sizeof(int), 1, fp) != 1 ||
-            fread(temp.admissionDate, sizeof(char), sizeof(temp.admissionDate), fp) != sizeof(temp.admissionDate) ||
-            fread(temp.dischargeDate, sizeof(char), sizeof(temp.dischargeDate), fp) != sizeof(temp.dischargeDate)) {
+        if (!readPatientFromFile(fp, &temp)) {
             perror("Error reading patient data from backup file");
             fclose(fp);
             return;
-            }
+        }
         Patient *newPatient = malloc(sizeof(Patient));
         if (newPatient == NULL) {
             perror("Error allocating memory for restored patient");
             exit(1);
         }
         *newPatient = temp;
+
         PatientNode *newNode = malloc(sizeof(PatientNode));
         if (newNode == NULL) {
             perror("Error allocating memory for patient node during restore");
